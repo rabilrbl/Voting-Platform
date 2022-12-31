@@ -1,0 +1,24 @@
+{
+  "name": "voting-platform",
+  "version": "0.0.1",
+  "description": "This is a Online Voting Platform built using Node.js which allows",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rabilrbl/Voting-Platform.git"
+  },
+  "keywords": [
+    "Voting",
+    "platform",
+    "expressjs"
+  ],
+  "author": "Mohammed Rabil",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rabilrbl/Voting-Platform/issues"
+  },
+  "homepage": "https://github.com/rabilrbl/Voting-Platform#readme"
+}
