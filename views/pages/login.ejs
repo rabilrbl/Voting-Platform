@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('../partials/head', { title: 'Login to Voting Platform' }) %>
+  </head>
+  <body>
+    <div class="mcontainer">
+      <!-- Create a stylish login form with dark theme in tailwindcss -->
+      <div class="flex flex-col justify-center items-center h-screen">
+        <form
+          class="border-2 border-slate-500 shadow-md rounded-xl px-8 pt-6 pb-8 mb-4 flex flex-col my-2 shadow-slate-500 w-full max-w-xl"
+            method="post"
+          >
+        <h1 class="mb-4">
+            Login
+        </h1>
+          <div class="mb-4">
+            <label for="email"> Email </label>
+            <input
+              id="email"
+              name="email"
+              type="text"
+              placeholder="example@email.com"
+            />
+          </div>
+          <div class="mb-6">
+            <div class="flex items-center justify-between"><label for="password"> Password </label><a
+                class="inline-text"
+                href="#/forgot-password"
+              >
+                Forgot Password?
+              </a></div>
+            <input
+              id="password"
+              type="password"
+              name="password"
+              placeholder="******************"
+            />
+            <p class="text-red-500 text-xs italic">Please choose a password.</p>
+          </div>
+          <%- include('../partials/csrf') %>
+          <div class="flex items-center justify-between">
+            <button class="btn" type="submit">Sign In</button>
+            <a
+              class="inline-text"
+              href="/register"
+            >
+              Don't have an account?
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
