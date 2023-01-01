@@ -9,10 +9,11 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18.x
+          node-version: 19
+          cache: yarn
       - name: Setup postgres
         run: docker-compose up -d
       - name: Install dependencies
-        run: npm install
+        run: yarn install
       - name: Run tests
-        run: npm test
+        run: yarn test
