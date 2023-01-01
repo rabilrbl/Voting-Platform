@@ -11,7 +11,7 @@ jobs:
         with:
           node-version: 18.x
       - name: Setup postgres
-        run: docker-compose up .
+        run: docker-compose up -d
       - name: Install dependencies
         run: npm install
       - name: Run tests
