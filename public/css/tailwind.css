@@ -1,3 +1,45 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  .btn {
+    @apply bg-blue-500 text-white font-bold py-2 px-4 rounded;
+  }
+
+  .btn:hover {
+    @apply bg-blue-700;
+  }
+
+  .mcontainer {
+    @apply container mx-auto px-4;
+  }
+
+  body {
+    @apply bg-slate-800 text-slate-100;
+  }
+
+  h1 {
+    @apply text-4xl font-bold;
+  }
+
+  h2 {
+    @apply text-3xl font-bold;
+  }
+
+  h3 {
+    @apply text-2xl font-bold;
+  }
+
+  h4 {
+    @apply text-xl font-bold;
+  }
+
+  h5 {
+    @apply text-lg font-bold;
+  }
+
+  p {
+    @apply text-base font-normal my-2;
+  }
+}
