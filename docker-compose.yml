@@ -6,8 +6,8 @@ services:
     hostname: postgres
     image: postgres:latest
     restart: always
-    env_file:
-      - .env
+    environment:
+      - POSTGRES_USER = postgres
     ports:
       - 5432:5432
     volumes:
