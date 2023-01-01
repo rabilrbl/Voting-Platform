@@ -8,10 +8,12 @@
     "prepare": "npx husky install",
     "start:server": "NODE_ENV=development nodemon -e js,ejs,css",
     "start:tailwind": "NODE_ENV=development npx tailwindcss -i ./public/css/tailwind.css -o ./public/css/main.css -w",
+    "build:tailwind": "NODE_ENV=production npx tailwindcss -i ./public/css/tailwind.css -o ./public/css/main.css",
     "db:migrate": "npx sequelize-cli db:migrate",
     "db:migrate:undo": "npx sequelize-cli db:migrate:undo",
     "start": "run-p db:migrate start:tailwind start:server",
-    "start:prod": "NODE_ENV=production npx sequelize-cli db:migrate && node index.js"
+    "start:server:prod": "NODE_ENV=production node index.js",
+    "start:prod": "NODE_ENV=production run-p build:tailwind db:migrate start:server:prod"
   },
   "lint-staged": {
     "*.js": [
@@ -35,6 +37,7 @@
   },
   "homepage": "https://github.com/rabilrbl/Voting-Platform#readme",
   "dependencies": {
+    "@tailwindcss/typography": "^0.5.8",
     "bcrypt": "^5.1.0",
     "connect-ensure-login": "^0.1.1",
     "cookie-parser": "^1.4.6",
