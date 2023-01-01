@@ -5,7 +5,6 @@
   "main": "index.js",
   "scripts": {
     "test": "NODE_ENV=test jest --detectOpenHandles",
-    "prepare": "npx husky install",
     "pretest": "NODE_ENV=test npx sequelize-cli db:drop && NODE_ENV=test npx sequelize-cli db:create",
     "start:server": "NODE_ENV=development nodemon -e js,ejs,css",
     "start:tailwind": "NODE_ENV=development npx tailwindcss -i ./public/css/tailwind.css -o ./public/css/main.css -w",
