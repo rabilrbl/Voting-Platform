@@ -11,6 +11,14 @@
     @apply bg-blue-700;
   }
 
+  .btn-outline {
+    @apply border-2 border-blue-500 text-blue-100 font-bold py-2 px-4 rounded;
+  }
+
+  .btn-outline:hover {
+    @apply bg-blue-500 text-white;
+  }
+
   .mcontainer {
     @apply container mx-auto px-4;
   }

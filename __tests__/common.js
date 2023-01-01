@@ -26,7 +26,7 @@ const fetchCSRFToken = async () => {
   };
 };
 
-describe("Common Tests", () => {
+describe("Common Tests for Voting Platform", () => {
   beforeAll(async () => {
     await db.sequelize.sync();
     server = app.listen(3000, () => {});

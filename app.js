@@ -3,7 +3,7 @@ const app = express();
 const path = require("path");
 const csurf = require("csurf");
 const cookieParser = require("cookie-parser");
-const { Users } = require("./models");
+const { Users, Elections } = require("./models");
 const passport = require("passport"); // authentication
 const connectEnsureLogin = require("connect-ensure-login"); //authorization
 const session = require("express-session"); // session middleware for cookie support
@@ -79,9 +79,9 @@ passport.deserializeUser(function (id, done) {
     });
 });
 
-const sendResponse = (req, res, renderRes, jsonRes) => {
+const sendResponse = (req, res, renderRes, jsonRes, renderData = {}) => {
   if (req.accepts("html")) {
-    res.render(renderRes);
+    res.render(renderRes, renderData);
   } else {
     res.json(jsonRes);
   }
@@ -100,7 +100,7 @@ app.get("/", (req, res) => {
 
 app.get(
   "/login",
-  connectEnsureLogin.ensureLoggedOut({ redirectTo: "/ballots" }),
+  connectEnsureLogin.ensureLoggedOut({ redirectTo: "/elections" }),
   (req, res) => {
     res.render("pages/login");
   }
@@ -113,13 +113,13 @@ app.post(
     // failureFlash: true,
   }),
   function (request, response) {
-    response.redirect("/ballots");
+    response.redirect("/elections");
   }
 );
 
 app.get(
   "/register",
-  connectEnsureLogin.ensureLoggedOut({ redirectTo: "/ballots" }),
+  connectEnsureLogin.ensureLoggedOut({ redirectTo: "/elections" }),
   (req, res) => {
     res.render("pages/register");
   }
@@ -127,7 +127,7 @@ app.get(
 
 app.post(
   "/register",
-  connectEnsureLogin.ensureLoggedOut({ redirectTo: "/ballots" }),
+  connectEnsureLogin.ensureLoggedOut({ redirectTo: "/elections" }),
   async function (request, response) {
     const firstName = request.body.firstName.trim();
     const lastName = request.body.lastName.trim();
@@ -146,7 +146,7 @@ app.post(
             return response.status(500).json({ error: err.message });
           }
           return request.accepts("html")
-            ? response.redirect("/ballots")
+            ? response.redirect("/elections")
             : // request.flash("success", "User created successfully")
               response.json({
                 id: user.id,
@@ -177,10 +177,36 @@ app.get(
   }
 );
 
-app.get("/ballots", connectEnsureLogin.ensureLoggedIn(), (req, res) => {
-  sendResponse(req, res, "pages/ballots", {
-    ballots: [],
+app.get("/elections", connectEnsureLogin.ensureLoggedIn(), (req, res) => {
+  const elections = Elections.findAll({
+    where: {
+      userId: req.user.id,
+    },
   });
+  res.render("pages/elections", { elections, user: req.user });
 });
+
+app.post(
+  "/elections",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    const name = req.body.name.trim();
+    const description = req.body.description.trim();
+
+    await Elections.create({
+      name,
+      description,
+      userId: req.user.id,
+    })
+      .then((election) => {
+        req.accepts("html") ? res.redirect("/elections") : res.json(election);
+      })
+      .catch((error) => {
+        req.accepts("html")
+          ? res.redirect("/elections")
+          : res.status(422).json({ error: error.message });
+      });
+  }
+);
 
 module.exports = app;
