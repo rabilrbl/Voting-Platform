@@ -53,11 +53,11 @@ describe("Common Tests for Voting Platform", () => {
   });
 
   it("should test for sessions", async () => {
-    let res = await agent.get("/ballots");
+    let res = await agent.get("/elections");
     expect(res.statusCode).toBe(200);
     res = await agent.get("/logout");
     expect(res.statusCode).toBe(302);
-    res = await agent.get("/ballots");
+    res = await agent.get("/elections");
     expect(res.statusCode).toBe(302);
   });
 });
