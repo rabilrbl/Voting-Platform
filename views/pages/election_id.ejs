@@ -4,14 +4,23 @@
     <%- include('../partials/head', { title: 'Ballots' }) %>
 </head>
 <body>
-    <div class="mcontainer center mt-4">
-        <div>
-            <h1 class="font-extrabold">
-                <%= election.title %>
-            </h1>
-            <p class="text-gray-500">
-                <%= election.description %>
-            </p>
+    <div class="mcontainer mt-4 w-full max-w-xl">
+        <div class="center w-full">
+            <div class="w-full">
+                <h1 class="font-extrabold">
+                    <%= election.title %>
+                </h1>
+                <!-- Created on -->
+                <p class="text-gray-500">
+                    Created on <%= new Date(election.createdAt).toLocaleString() %>
+                </p>
+                <p class="text-gray-400 text-lg">
+                    <%= election.description %>
+                </p>
+                <div>
+                    
+                </div>
+            </div>
         </div>
     </div>
 </body>

@@ -31,13 +31,16 @@
           </div>
           <div class="mt-6">
             <div>
-              <% if (elections.length > 0) { %>
               <div class="mt-6">
                 <div class="flex items-center justify-between">
+                  <% if (elections.length > 0) { %>
                   <h2 class="text-xl">Your Elections</h2>
+                  <% } else { %>
+                  <h2 class="text-xl">You have no elections</h2>
+                  <% } %>
                   <button
                     onclick="openModal()"
-                    class="btn-outline flex items-center justify-between max-w-fit rounded-full"
+                    class="btn flex items-center justify-between max-w-fit rounded-full"
                   >
                     Create
                     <svg
@@ -58,7 +61,7 @@
                 </div>
                 <div class="mt-4">
                   <% elections.forEach((election) => { %>
-                  <a href="/elections/<%= election.id %>">
+                  <div>
                     <div
                       class="flex items-center justify-between bg-slate-900 p-2 py-4 w-full mb-2 rounded-xl hover-pop hover:shadow-slate-500 cursor-pointer border-2 border-slate-500"
                     >
@@ -77,21 +80,32 @@
                             d="M8.25 4.5l7.5 7.5-7.5 7.5"
                           />
                         </svg>
-                        <span><%= election.title %></span>
+                        <a href="/elections/<%= election.id %>">
+                          <%= election.title %></a>
                       </div>
-                      <button type="button" class="btn p-1 rounded-full hover:text-slate-100" onclick="deleteElection(<%= election.id %>)">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                      <button
+                        type="button"
+                        class="btn p-1 rounded-full hover:text-slate-100"
+                        onclick="deleteElection(<%= election.id %>)"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke-width="1.5"
+                          stroke="currentColor"
+                          class="w-6 h-6"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+                          />
                         </svg>
-                        
                       </button>
                     </div>
                   </a>
-                  <% }) %> <% } else { %>
-                  <div class="mt-4">
-                    <p class="text-xl">You have no elections.</p>
-                  </div>
-                  <% } %>
+                  <% }) %>
                 </div>
               </div>
             </div>
@@ -169,37 +183,30 @@
       </div>
     </div>
     <script>
-      // Get the modal and the trigger button
       const modal = document.getElementById("modal");
 
-      // Get the close button
       const closeButton = document.getElementById("close-button");
 
-      // When the trigger button is clicked, show the modal
       const openModal = () => {
         modal.classList.replace("hidden", "block");
       };
 
-      // When the close button is clicked, hide the modal
       const closeModal = () => {
         modal.classList.replace("block", "hidden");
       };
 
-      // When the user clicks outside the modal, hide the modal
       window.addEventListener("click", (event) => {
         if (event.target === modal) {
           closeModal();
         }
       });
 
-      // When the user presses the escape key, hide the modal
       window.addEventListener("keydown", (event) => {
         if (event.key === "Escape") {
           closeModal();
         }
       });
 
-      // Submit the form
       const form = document.getElementById("createElectionForm");
       form.addEventListener("submit", (event) => {
         event.preventDefault();
@@ -223,7 +230,6 @@
           });
       });
 
-      // Create a delete function
       const deleteElection = (id) => {
         fetch(`/elections/${id}`, {
           method: "DELETE",
