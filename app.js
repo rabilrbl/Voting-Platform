@@ -10,6 +10,9 @@ const session = require("express-session"); // session middleware for cookie sup
 const LocalStrategy = require("passport-local").Strategy;
 const bcrypt = require("bcrypt");
 
+const SequelizeStore = require('connect-session-sequelize')(session.Store);
+const db = require("./models/index");
+
 const saltRounds = 10;
 
 app.use(cookieParser("secret"));
@@ -30,7 +33,7 @@ app.use(
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
-    cookie: { maxAge: 24 * 60 * 60 * 1000 }, // 24 hour
+    cookie: { maxAge: 24 * 60 * 60 * 1000 }, // 24 hours
   })
 );
 
@@ -177,8 +180,8 @@ app.get(
   }
 );
 
-app.get("/elections", connectEnsureLogin.ensureLoggedIn(), (req, res) => {
-  const elections = Elections.findAll({
+app.get("/elections", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
+  const elections = await Elections.findAll({
     where: {
       userId: req.user.id,
     },
@@ -190,23 +193,32 @@ app.post(
   "/elections",
   connectEnsureLogin.ensureLoggedIn(),
   async (req, res) => {
-    const name = req.body.name.trim();
-    const description = req.body.description.trim();
-
+    const title = req.body.name.trim();
     await Elections.create({
-      name,
-      description,
+      title,
       userId: req.user.id,
+      status: "inactive",
     })
       .then((election) => {
         req.accepts("html") ? res.redirect("/elections") : res.json(election);
       })
       .catch((error) => {
-        req.accepts("html")
-          ? res.redirect("/elections")
-          : res.status(422).json({ error: error.message });
+        // req.accepts("html")
+        //   ? res.redirect("/elections")
+        //   : 
+        res.status(422).json({ error: error.message });
       });
   }
 );
+
+app.get("/elections/:id", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
+  const election = await Elections.findByPk(req.params.id);
+  // const candidates = await Candidates.findAll({
+  //   where: {
+  //     electionId: req.params.id,
+  //   },
+  // });
+  res.render("pages/election_id", { election, user: req.user });
+});
 
 module.exports = app;

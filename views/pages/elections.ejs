@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <%- include('../partials/head', { title: 'Ballots' }) %>
+    <%- include('../partials/head', { title: 'Elections' }) %>
   </head>
   <body>
     <div class="mcontainer mt-4">
@@ -30,66 +30,55 @@
             </a>
           </div>
           <div class="mt-6">
-            <form
-              class="flex items-center justify-between w-full"
-              method="post"
+            <button
+              onclick="openModal()"
+              class="btn-outline flex items-center justify-between max-w-fit rounded-full"
             >
-              <input
-                type="text"
-                class="border-2 border-slate-500 rounded-full px-4 py-2 mr-2"
-                placeholder="Election Name"
-                name="name"
-              />
-              <button
-                type="submit"
-                class="btn-outline flex items-center justify-between max-w-fit rounded-full"
+              Create
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="w-6 h-6"
               >
-                Create
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  stroke="currentColor"
-                  class="w-6 h-6"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                  />
-                </svg>
-              </button>
-            </form>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                />
+              </svg>
+            </button>
             <div>
               <% if (elections.length > 0) { %>
               <div class="mt-6">
                 <h2 class="text-xl">Your Elections</h2>
                 <div class="mt-4">
                   <% elections.forEach((election) => { %>
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center">
+                  <a href="/elections/<%= election.id %>">
+                    <div
+                      class="flex items-center bg-slate-900 p-2 py-4 w-full mb-2 rounded-xl hover-pop hover:shadow-slate-500 cursor-pointer border-2 border-slate-500"
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke-width="1.5"
                         stroke="currentColor"
-                        class="w-6 h-6 mr-2"
+                        class="w-6 h-6"
                       >
                         <path
                           stroke-linecap="round"
                           stroke-linejoin="round"
-                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                          d="M8.25 4.5l7.5 7.5-7.5 7.5"
                         />
                       </svg>
-                      <a href="/elections/<%= election.id %>"
-                        ><%= election.name %></a
-                      >
+
+                      <%= election.title %>
                     </div>
-                  </div>
-                  <% }) %>
-                  <% } else { %>
+                  </a>
+                  <% }) %> <% } else { %>
                   <div class="mt-4">
                     <p class="text-xl">You have no elections.</p>
                   </div>
@@ -101,5 +90,98 @@
         </div>
       </div>
     </div>
+    <div
+      id="modal"
+      class="hidden fixed top-0 left-0 h-screen w-screen flex items-center justify-center"
+    >
+      <!-- The modal itself -->
+      <div
+        class="bg-slate-900 border-2 border-slate-400 shadow-slate-400 p-6 rounded shadow-lg"
+      >
+        <div class="flex items-center justify-between">
+          <h3 class="text-2xl font-bold">Create Election</h3>
+          <button
+            onclick="closeModal()"
+            type="button"
+            class="btn-outline bg-transparent p-1 rounded-full border-red-500 hover:bg-red-500"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="text-red-500 hover:text-slate-100 w-6 h-6"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+        <form
+          class="flex flex-col gap-2 items-center justify-between w-full"
+          method="post"
+        >
+          <input
+            type="text"
+            class="border-2 border-slate-500 rounded-lg px-4 py-2"
+            placeholder="Election Name"
+            name="name"
+          />
+          <textarea
+            class="bg-slate-700 border-2 border-slate-500 rounded-lg px-4 py-2"
+            placeholder="Election Description"
+            name="description"
+          ></textarea>
+          <button
+            type="submit"
+            class="btn-outline flex items-center justify-between max-w-fit rounded-full"
+          >
+            Create
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="w-6 h-6"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+              />
+            </svg>
+          </button>
+        </form>
+      </div>
+    </div>
+    <script>
+      // Get the modal and the trigger button
+      const modal = document.getElementById("modal");
+
+      // Get the close button
+      const closeButton = document.getElementById("close-button");
+
+      // When the trigger button is clicked, show the modal
+      const openModal = () => {
+        modal.classList.replace("hidden", "block");
+      };
+
+      // When the close button is clicked, hide the modal
+      const closeModal = () => {
+        modal.classList.replace("block", "hidden");
+      };
+
+      // When the user clicks outside the modal, hide the modal
+      window.addEventListener("click", (event) => {
+        if (event.target === modal) {
+          modal.classList.remove("block");
+        }
+      });
+    </script>
   </body>
 </html>
