@@ -61,9 +61,9 @@
                 </div>
                 <div class="mt-4">
                   <% elections.forEach((election) => { %>
-                  <div>
+                  <div class="">
                     <div
-                      class="flex items-center justify-between bg-slate-900 p-2 py-4 w-full mb-2 rounded-xl hover-pop hover:shadow-slate-500 cursor-pointer border-2 border-slate-500"
+                      class="group flex items-center justify-between bg-slate-900 p-2 py-4 w-full mb-2 rounded-xl hover-pop hover:shadow-slate-500 cursor-pointer border-2 border-slate-500"
                     >
                       <div class="flex items-center">
                         <svg
@@ -80,12 +80,12 @@
                             d="M8.25 4.5l7.5 7.5-7.5 7.5"
                           />
                         </svg>
-                        <a href="/elections/<%= election.id %>">
+                        <a href="/election/<%= election.id %>">
                           <%= election.title %></a>
                       </div>
                       <button
                         type="button"
-                        class="btn p-1 rounded-full hover:text-slate-100"
+                        class="hidden btn p-1 rounded-full hover:text-slate-100 group-hover:block"
                         onclick="deleteElection(<%= election.id %>)"
                       >
                         <svg
@@ -225,13 +225,13 @@
             if (data.error) {
               alert(data.error);
             } else {
-              window.location.href = `/elections/${data.id}`;
+              window.location.href = `/election/${data.id}`;
             }
           });
       });
 
       const deleteElection = (id) => {
-        fetch(`/elections/${id}`, {
+        fetch(`/election/${id}`, {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",

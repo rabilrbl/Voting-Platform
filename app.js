@@ -3,15 +3,15 @@ const app = express();
 const path = require("path");
 const csurf = require("csurf");
 const cookieParser = require("cookie-parser");
-const { Users, Elections } = require("./models");
+const { Users, Elections, Questions, Answers } = require("./models");
 const passport = require("passport"); // authentication
 const connectEnsureLogin = require("connect-ensure-login"); //authorization
 const session = require("express-session"); // session middleware for cookie support
 const LocalStrategy = require("passport-local").Strategy;
 const bcrypt = require("bcrypt");
 
-const SequelizeStore = require('connect-session-sequelize')(session.Store);
-const db = require("./models/index");
+// const SequelizeStore = require("connect-session-sequelize")(session.Store);
+// const db = require("./models/index");
 
 const saltRounds = 10;
 
@@ -210,7 +210,7 @@ app.post(
   }
 );
 
-app.delete("/elections/:id", async (req, res) => {
+app.delete("/election/:id", async (req, res) => {
   const election = await Elections.findByPk(req.params.id);
   if (election) {
     await election.destroy();
@@ -220,14 +220,50 @@ app.delete("/elections/:id", async (req, res) => {
   }
 });
 
-app.get("/elections/:id", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
-  const election = await Elections.findByPk(req.params.id);
-  // const candidates = await Candidates.findAll({
-  //   where: {
-  //     electionId: req.params.id,
-  //   },
-  // });
-  res.render("pages/election_id", { election, user: req.user });
+app.get(
+  "/election/:id",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    const election = await Elections.findByPk(req.params.id);
+    const questions = await Questions.findAll({
+      where: {
+        electionId: req.params.id,
+      },
+      include: [
+        {
+          model: Answers,
+        },
+      ],
+    });
+    if (election) {
+      req.accepts("html")
+        ? res.render("pages/questions", {
+            election,
+            questions,
+            user: req.user,
+          })
+        : res.json(election);
+    } else {
+      req.accepts("html")
+        ? res.status(404)
+        : res.status(404).json({ error: "Election not found" });
+    }
+  }
+);
+
+app.post("/election/:id/questions", async (req, res) => {
+  const question = req.body.question.trim();
+  const electionId = req.params.id;
+  await Questions.create({
+    question,
+    electionId,
+  })
+    .then((question) => {
+      res.json(question);
+    })
+    .catch((error) => {
+      res.status(422).json({ error: error.message });
+    });
 });
 
 module.exports = app;
