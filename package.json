@@ -13,7 +13,7 @@
     "db:migrate:undo": "npx sequelize-cli db:migrate:undo",
     "start": "run-p db:migrate start:tailwind start:server",
     "start:server:prod": "NODE_ENV=production node index.js",
-    "start:prod": "NODE_ENV=production run-p build:tailwind db:migrate start:server:prod"
+    "start:prod": "NODE_ENV=production run-p db:migrate start:server:prod"
   },
   "lint-staged": {
     "*.js": [
