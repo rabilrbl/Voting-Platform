@@ -9,14 +9,6 @@ module.exports = {
      * Example:
      * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
      */
-    // add options column to questions table
-    await queryInterface.addColumn("Questions", "options", {
-      type: Sequelize.ARRAY(Sequelize.STRING),
-      allowNull: false,
-      validate: {
-        len: 2,
-      },
-    });
     // add electionId column to questions table
     await queryInterface.addColumn("Questions", "electionId", {
       type: Sequelize.INTEGER,
@@ -35,8 +27,6 @@ module.exports = {
      * Example:
      * await queryInterface.dropTable('users');
      */
-    // remove options column from questions table
-    await queryInterface.removeColumn("Questions", "options");
     // remove electionId column from questions table
     await queryInterface.removeColumn("Questions", "electionId");
   }
