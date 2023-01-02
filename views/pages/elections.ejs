@@ -30,52 +30,61 @@
             </a>
           </div>
           <div class="mt-6">
-            <button
-              onclick="openModal()"
-              class="btn-outline flex items-center justify-between max-w-fit rounded-full"
-            >
-              Create
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                class="w-6 h-6"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                />
-              </svg>
-            </button>
             <div>
               <% if (elections.length > 0) { %>
               <div class="mt-6">
-                <h2 class="text-xl">Your Elections</h2>
+                <div class="flex items-center justify-between">
+                  <h2 class="text-xl">Your Elections</h2>
+                  <button
+                    onclick="openModal()"
+                    class="btn-outline flex items-center justify-between max-w-fit rounded-full"
+                  >
+                    Create
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke-width="1.5"
+                      stroke="currentColor"
+                      class="w-6 h-6"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                      />
+                    </svg>
+                  </button>
+                </div>
                 <div class="mt-4">
                   <% elections.forEach((election) => { %>
                   <a href="/elections/<%= election.id %>">
                     <div
-                      class="flex items-center bg-slate-900 p-2 py-4 w-full mb-2 rounded-xl hover-pop hover:shadow-slate-500 cursor-pointer border-2 border-slate-500"
+                      class="flex items-center justify-between bg-slate-900 p-2 py-4 w-full mb-2 rounded-xl hover-pop hover:shadow-slate-500 cursor-pointer border-2 border-slate-500"
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke-width="1.5"
-                        stroke="currentColor"
-                        class="w-6 h-6"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          d="M8.25 4.5l7.5 7.5-7.5 7.5"
-                        />
-                      </svg>
-
-                      <%= election.title %>
+                      <div class="flex items-center">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke-width="1.5"
+                          stroke="currentColor"
+                          class="w-6 h-6"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M8.25 4.5l7.5 7.5-7.5 7.5"
+                          />
+                        </svg>
+                        <span><%= election.title %></span>
+                      </div>
+                      <button type="button" class="btn p-1 rounded-full hover:text-slate-100" onclick="deleteElection(<%= election.id %>)">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                        </svg>
+                        
+                      </button>
                     </div>
                   </a>
                   <% }) %> <% } else { %>
@@ -96,14 +105,14 @@
     >
       <!-- The modal itself -->
       <div
-        class="bg-slate-900 border-2 border-slate-400 shadow-slate-400 p-6 rounded shadow-lg"
+        class="bg-slate-900 border-2 border-slate-400 shadow-slate-500 p-6 rounded-lg shadow-md"
       >
-        <div class="flex items-center justify-between">
+        <div class="flex items-center justify-between mb-4">
           <h3 class="text-2xl font-bold">Create Election</h3>
           <button
             onclick="closeModal()"
             type="button"
-            class="btn-outline bg-transparent p-1 rounded-full border-red-500 hover:bg-red-500"
+            class="btn-outline bg-transparent p-1 rounded-full border-red-500 hover:bg-red-500 text-red-500 hover:text-slate-100"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -111,7 +120,7 @@
               viewBox="0 0 24 24"
               stroke-width="1.5"
               stroke="currentColor"
-              class="text-red-500 hover:text-slate-100 w-6 h-6"
+              class="w-6 h-6"
             >
               <path
                 stroke-linecap="round"
@@ -123,7 +132,7 @@
         </div>
         <form
           class="flex flex-col gap-2 items-center justify-between w-full"
-          method="post"
+          id="createElectionForm"
         >
           <input
             type="text"
@@ -132,13 +141,13 @@
             name="name"
           />
           <textarea
-            class="bg-slate-700 border-2 border-slate-500 rounded-lg px-4 py-2"
+            class="bg-slate-600 border-2 border-slate-500 rounded-lg px-4 py-2"
             placeholder="Election Description"
             name="description"
           ></textarea>
           <button
             type="submit"
-            class="btn-outline flex items-center justify-between max-w-fit rounded-full"
+            class="btn-outline flex items-center justify-between max-w-fit rounded-full mt-2"
           >
             Create
             <svg
@@ -179,9 +188,61 @@
       // When the user clicks outside the modal, hide the modal
       window.addEventListener("click", (event) => {
         if (event.target === modal) {
-          modal.classList.remove("block");
+          closeModal();
         }
       });
+
+      // When the user presses the escape key, hide the modal
+      window.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          closeModal();
+        }
+      });
+
+      // Submit the form
+      const form = document.getElementById("createElectionForm");
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData);
+        data._csrf = "<%= csrfToken %>";
+        fetch("/elections", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.error) {
+              alert(data.error);
+            } else {
+              window.location.href = `/elections/${data.id}`;
+            }
+          });
+      });
+
+      // Create a delete function
+      const deleteElection = (id) => {
+        fetch(`/elections/${id}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            _csrf: "<%= csrfToken %>",
+          }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.error) {
+              alert(data.error);
+            } else {
+              window.location.href = "/elections";
+            }
+          });
+      };
     </script>
   </body>
 </html>

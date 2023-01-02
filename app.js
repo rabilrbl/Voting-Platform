@@ -194,22 +194,31 @@ app.post(
   connectEnsureLogin.ensureLoggedIn(),
   async (req, res) => {
     const title = req.body.name.trim();
+    const description = req.body.description.trim();
     await Elections.create({
       title,
+      description,
       userId: req.user.id,
       status: "inactive",
     })
       .then((election) => {
-        req.accepts("html") ? res.redirect("/elections") : res.json(election);
+        res.json(election);
       })
       .catch((error) => {
-        // req.accepts("html")
-        //   ? res.redirect("/elections")
-        //   : 
         res.status(422).json({ error: error.message });
       });
   }
 );
+
+app.delete("/elections/:id", async (req, res) => {
+  const election = await Elections.findByPk(req.params.id);
+  if (election) {
+    await election.destroy();
+    res.json({ message: "Election deleted successfully" });
+  } else {
+    res.status(404).json({ error: "Election not found" });
+  }
+});
 
 app.get("/elections/:id", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
   const election = await Elections.findByPk(req.params.id);
