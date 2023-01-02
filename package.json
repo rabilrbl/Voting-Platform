@@ -9,7 +9,7 @@
     "start:server": "NODE_ENV=development nodemon -e js,ejs,css",
     "start:tailwind": "NODE_ENV=development npx tailwindcss -i ./public/css/tailwind.css -o ./public/css/main.css -w",
     "build:tailwind": "NODE_ENV=production npx tailwindcss -i ./public/css/tailwind.css -o ./public/css/main.css",
-    "db:migrate": "npx sequelize-cli db:migrate",
+    "db:migrate": "sequelize-cli db:migrate",
     "db:migrate:undo": "npx sequelize-cli db:migrate:undo",
     "start": "run-p db:migrate start:tailwind start:server",
     "start:server:prod": "NODE_ENV=production node index.js",
@@ -49,7 +49,11 @@
     "passport": "^0.6.0",
     "passport-local": "^1.0.0",
     "pg": "^8.8.0",
-    "sequelize": "^6.28.0"
+    "sequelize": "^6.28.0",
+    "tailwindcss": "^3.2.4",
+    "yarn-run-all": "^3.1.1",
+    "npm-run-all": "^4.1.5",
+    "sequelize-cli": "^6.5.2"
   },
   "devDependencies": {
     "eslint": "^8.31.0",
@@ -58,10 +62,6 @@
     "nodemon": "^2.0.20",
     "prettier": "^2.8.1",
     "reload": "^3.2.0",
-    "sequelize-cli": "^6.5.2",
-    "supertest": "^6.3.3",
-    "tailwindcss": "^3.2.4",
-    "yarn-run-all": "^3.1.1",
-    "npm-run-all": "^4.1.5"
+    "supertest": "^6.3.3"
   }
 }
