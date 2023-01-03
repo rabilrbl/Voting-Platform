@@ -210,15 +210,19 @@ app.post(
   }
 );
 
-app.delete("/election/:id", async (req, res) => {
-  const election = await Elections.findByPk(req.params.id);
-  if (election) {
-    await election.destroy();
-    res.json({ message: "Election deleted successfully" });
-  } else {
-    res.status(404).json({ error: "Election not found" });
+app.delete(
+  "/election/:id",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    const election = await Elections.findByPk(req.params.id);
+    if (election) {
+      await election.destroy();
+      res.json({ message: "Election deleted successfully" });
+    } else {
+      res.status(404).json({ error: "Election not found" });
+    }
   }
-});
+);
 
 app.get(
   "/election/:id",
@@ -251,19 +255,103 @@ app.get(
   }
 );
 
-app.post("/election/:id/questions", async (req, res) => {
-  const question = req.body.question.trim();
-  const electionId = req.params.id;
-  await Questions.create({
-    question,
-    electionId,
-  })
-    .then((question) => {
-      res.json(question);
+app.post(
+  "/election/:id/questions",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    const question = req.body.question.trim();
+    const electionId = req.params.id;
+    const description = req.body.description.trim();
+    await Questions.create({
+      question,
+      electionId,
+      description,
     })
-    .catch((error) => {
-      res.status(422).json({ error: error.message });
+      .then((question) => {
+        res.json(question);
+      })
+      .catch((error) => {
+        res.status(422).json({ error: error.message });
+      });
+  }
+);
+
+app.delete(
+  "/election/:id/questions/:questionId",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    const question = await Questions.findByPk(req.params.questionId);
+    const answers = await Answers.findAll({
+      where: {
+        questionId: req.params.questionId,
+      },
     });
+    if (question) {
+      answers.forEach(async (answer) => {
+        await answer.destroy();
+      });
+      await question.destroy();
+      res.json({ message: "Question deleted successfully" });
+    } else {
+      res.status(404).json({ error: "Question not found" });
+    }
+  }
+);
+
+app.post(
+  "/election/:id/questions/:questionId/answers",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    const answer = req.body.answer.trim();
+    const questionId = req.params.questionId;
+    await Answers.create({
+      answer,
+      questionId,
+    })
+      .then((answer) => {
+        res.json(answer);
+      })
+      .catch((error) => {
+        res.status(422).json({ error: error.message });
+      });
+  }
+);
+
+app.delete(
+  "/election/:id/questions/:questionId/answers/:answerId",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    const answer = await Answers.findByPk(req.params.answerId);
+    if (answer) {
+      await answer.destroy();
+      res.json({ message: "Answer deleted successfully" });
+    } else {
+      res.status(404).json({ error: "Answer not found" });
+    }
+  }
+);
+
+app.get("/election/:id/vote", async (req, res) => {
+  const election = await Elections.findByPk(req.params.id);
+  const questions = await Questions.findAll({
+    where: {
+      electionId: req.params.id,
+    },
+    include: [
+      {
+        model: Answers,
+      },
+    ],
+  });
+  if (election) {
+    req.accepts("html")
+      ? res.render("pages/vote", { election, questions, user: req.user })
+      : res.json(election);
+  } else {
+    req.accepts("html")
+      ? res.status(404)
+      : res.status(404).json({ error: "Election not found" });
+  }
 });
 
 module.exports = app;

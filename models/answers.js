@@ -11,13 +11,17 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      this.belongsTo(models.Questions, { foreignKey: 'questionId' });
+      this.belongsTo(models.Questions, { foreignKey: 'questionId', onDelete: 'CASCADE' });
     }
   }
   Answers.init({
     answer: {
       type: DataTypes.STRING,
       allowNull: false,
+      validate: {
+        notEmpty: true,
+        notNull: true,
+      }
     },
     questionId: {
       type: DataTypes.INTEGER,

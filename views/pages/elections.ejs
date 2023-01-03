@@ -6,7 +6,7 @@
   <body>
     <div class="mcontainer mt-4">
       <div class="center">
-        <div class="w-full max-w-2xl">
+        <div class="w-full max-w-2xl" id="elections">
           <div class="flex items-center justify-between">
             <h1>Welcome <%= user.firstName %> <%= user.lastName %></h1>
             <a
@@ -80,7 +80,7 @@
                             d="M8.25 4.5l7.5 7.5-7.5 7.5"
                           />
                         </svg>
-                        <a href="/election/<%= election.id %>">
+                        <a class="text-xl" href="/election/<%= election.id %>">
                           <%= election.title %></a>
                       </div>
                       <button
@@ -188,10 +188,12 @@
       const closeButton = document.getElementById("close-button");
 
       const openModal = () => {
+        document.querySelector("#elections").classList.add("blur-sm");
         modal.classList.replace("hidden", "block");
       };
 
       const closeModal = () => {
+        document.querySelector("#elections").classList.remove("blur-sm");
         modal.classList.replace("block", "hidden");
       };
 
@@ -225,6 +227,7 @@
             if (data.error) {
               alert(data.error);
             } else {
+              e.target.reset();
               window.location.href = `/election/${data.id}`;
             }
           });
