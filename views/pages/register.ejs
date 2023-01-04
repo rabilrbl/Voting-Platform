@@ -15,20 +15,30 @@
           <div class="flex gap-2 max-w-lg">
             <div class="mb-4">
               <label for="firstName"> First Name </label>
-              <input id="firstName" name="firstName" type="text" />
+              <input
+                class="input"
+                id="firstName"
+                name="firstName"
+                type="text"
+              />
             </div>
             <div class="mb-4">
               <label for="lastName"> Last Name </label>
-              <input id="lastName" name="lastName" type="text" />
+              <input class="input" id="lastName" name="lastName" type="text" />
             </div>
           </div>
           <div class="mb-4">
             <label for="email"> Email </label>
-            <input id="email" name="email" type="email" />
+            <input class="input" id="email" name="email" type="email" />
           </div>
           <div class="mb-4">
             <label for="password"> Password </label>
-            <input id="password" name="password" type="password" />
+            <input
+              class="input"
+              id="password"
+              name="password"
+              type="password"
+            />
           </div>
           <%- include('../partials/csrf') %>
           <div class="flex items-center justify-between">

@@ -94,9 +94,9 @@
                     method="POST"
                     onsubmit="return addAnswer(event, <%= question.id %>, this)"
                     >
-                    <input
+                    <input 
                       type="text"
-                      class="border-2 border-slate-500 rounded-full py-1 px-2"
+                      class="input border-2 border-slate-500 rounded-full py-1 px-2"
                       placeholder="Answer"
                       name="answer"
                     />
@@ -163,7 +163,7 @@
             class="flex flex-col gap-2 items-center justify-between w-full"
             id="addQuestionForm"
           >
-            <input
+            <input class="input" 
               type="text"
               class="border-2 border-slate-500 rounded-lg px-4 py-2"
               placeholder="Question"

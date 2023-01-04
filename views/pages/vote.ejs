@@ -1,45 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <%- include('../partials/head', { title: 'Vote' }) %>
-</head>
-<body>
-    <div class="center mt-4 max-w-2x">
-        <div class="l">
-            <!-- This page is used by registered voters to vote for election with questions and answers -->
-            <div class="" id="vote">
-                <div class="">
-                    <h1><%= election.name %></h1>
-                    <p>
-                        <%= election.description %>
-                    </p>
-                </div>
-                <div>
-                    <% questions.forEach(function(question) { %>
-                    <div class="mt-6">
-                        <h2 class="text-xl"><%= question.name %></h2>
-                        <p>
-                            <%= question.description %>
-                        </p>
-                        <div class="mt-4">
-                            <form action="/vote" method="POST">
-                                <input type="hidden" name="electionId" value="<%= election.id %>">
-                                <input type="hidden" name="questionId" value="<%= question.id %>">
-                                <% question.Answers.forEach(function(answer) { %>
-                                <div class="mt-4 flex items-center justify-start">
-                                    <input type="radio" name="answerId" value="<%= answer.id %>">
-                                    <label for="answerId"><%= answer.answer %></label>
-                                </div>
-                                <% }) %>
-                                <div class="mt-4">
-                                    <button type="submit" class="btn">Submit</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                    <% }) %>
-                </div>
+  </head>
+  <body>
+    <div class="mcontainer center mt-4 max-w-2x">
+      <div class="l">
+        <!-- This page is used by registered voters to vote for election with questions and answers -->
+        <div class="" id="vote">
+          <div class="">
+            <h1><%= election.title %></h1>
+            <p class="text-slate-400"><%= election.description %></p>
+          </div>
+          <div>
+            <% questions.forEach(function(question, index) { %>
+            <div class="mt-6">
+              <h2 class="text-xl"><%= question.name %></h2>
+              <h3><%= index+1 %>. <%= question.description %></h3>
+              <div class="mt-4">
+                <form action="/vote" method="POST">
+                  <input
+                    type="hidden"
+                    name="electionId"
+                    value="<%= election.id %>"
+                  />
+                  <input
+                    type="hidden"
+                    name="questionId"
+                    value="<%= question.id %>"
+                  />
+                  <div class="grid gap-2 sm:grid-cols-2">
+                      <% question.Answers.forEach(function(answer) { %>
+                      <div class="mt-4 flex items-center">
+                        <input
+                          type="radio"
+                          class="mr-2 p-3 cursor-pointer"
+                          name="answerId"
+                          value="<%= answer.id %>"
+                        />
+                        <label
+                          for="answerId"
+                          class="cursor-pointer text-lg font-semibold"
+                          onclick="this.previousElementSibling.click()"
+                          ><%= answer.answer %></label
+                        >
+                      </div>
+                      <% }) %>
+                  </div>
+                  <div class="mt-6">
+                    <button type="submit" class="btn">Submit</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+            <% }) %>
+          </div>
         </div>
+      </div>
     </div>
-</body>
+  </body>
 </html>
