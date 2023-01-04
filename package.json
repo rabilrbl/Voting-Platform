@@ -37,6 +37,7 @@
   },
   "homepage": "https://github.com/rabilrbl/Voting-Platform#readme",
   "dependencies": {
+    "@tailwindcss/forms": "^0.5.3",
     "@tailwindcss/typography": "^0.5.8",
     "bcrypt": "^5.1.0",
     "connect-ensure-login": "^0.1.1",
@@ -46,15 +47,15 @@
     "ejs": "^3.1.8",
     "express": "^4.18.2",
     "express-session": "^1.17.3",
+    "npm-run-all": "^4.1.5",
     "passport": "^0.6.0",
     "passport-local": "^1.0.0",
     "pg": "^8.8.0",
+    "reload": "^3.2.0",
     "sequelize": "^6.28.0",
-    "tailwindcss": "^3.2.4",
-    "yarn-run-all": "^3.1.1",
-    "npm-run-all": "^4.1.5",
     "sequelize-cli": "^6.5.2",
-    "reload": "^3.2.0"
+    "tailwindcss": "^3.2.4",
+    "yarn-run-all": "^3.1.1"
   },
   "devDependencies": {
     "eslint": "^8.31.0",
