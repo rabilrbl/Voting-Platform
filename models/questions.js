@@ -21,6 +21,13 @@ module.exports = (sequelize, DataTypes) => {
       question: {
         type: DataTypes.STRING,
         allowNull: false,
+        validate: {
+          notEmpty: {
+            msg: "Question cannot be empty",
+          },
+          notNull: true,
+          len: 3,
+        },
       },
       description: {
         type: DataTypes.STRING,
