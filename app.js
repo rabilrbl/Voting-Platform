@@ -274,7 +274,12 @@ app.delete(
   "/election/:id",
   connectEnsureLogin.ensureLoggedIn(),
   async (req, res) => {
-    const election = await Elections.findByPk(req.params.id);
+    const election = await Elections.findOne({
+      where: {
+        id: req.params.id,
+        userId: req.user.id,
+      },
+    });
     if (election) {
       await election.destroy();
       res.json({ message: "Election deleted successfully" });
@@ -288,7 +293,12 @@ app.get(
   "/election/:id",
   connectEnsureLogin.ensureLoggedIn(),
   async (req, res) => {
-    const election = await Elections.findByPk(req.params.id);
+    const election = await Elections.findOne({
+      where: {
+        id: req.params.id,
+        userId: req.user.id,
+      },
+    });
     if (election) {
       req.accepts("html")
         ? res.render("pages/election", { election })
@@ -305,7 +315,12 @@ app.get(
   "/election/:id/questions",
   connectEnsureLogin.ensureLoggedIn(),
   async (req, res) => {
-    const election = await Elections.findByPk(req.params.id);
+    const election = await Elections.findOne({
+      where: {
+        id: req.params.id,
+        userId: req.user.id,
+      },
+    });
     const questions = await Questions.findAll({
       where: {
         electionId: req.params.id,
@@ -336,20 +351,31 @@ app.post(
   "/election/:id/questions",
   connectEnsureLogin.ensureLoggedIn(),
   async (req, res) => {
-    const question = req.body.question.trim();
-    const electionId = req.params.id;
-    const description = req.body.description.trim();
-    await Questions.create({
-      question,
-      electionId,
-      description,
-    })
-      .then((question) => {
-        res.json(question);
+    const election = await Elections.findOne({
+      where: {
+        id: req.params.id,
+        userId: req.user.id,
+      },
+    });
+    const isElectionActive = election.status === "active";
+    if (!isElectionActive) {
+      const question = req.body.question.trim();
+      const electionId = req.params.id;
+      const description = req.body.description.trim();
+      await Questions.create({
+        question,
+        electionId,
+        description,
       })
-      .catch((error) => {
-        res.status(422).json({ error: error.message });
-      });
+        .then((question) => {
+          res.json(question);
+        })
+        .catch((error) => {
+          res.status(422).json({ error: error.message });
+        });
+    } else {
+      res.status(422).json({ error: "Election is active. Cannot add questions" });
+    }
   }
 );
 
@@ -385,6 +411,14 @@ app.post(
   "/election/:id/questions/:questionId/answers",
   connectEnsureLogin.ensureLoggedIn(),
   async (req, res) => {
+    const election = await Elections.findOne({
+      where: {
+        id: req.params.id,
+        userId: req.user.id,
+      },
+    });
+    const isElectionActive = election.status === "active";
+    if (isElectionActive) {
     const answer = req.body.answer.trim();
     const questionId = req.params.questionId;
     await Answers.create({
@@ -397,6 +431,9 @@ app.post(
       .catch((error) => {
         res.status(422).json({ error: error.message });
       });
+    } else {
+      res.status(422).json({ error: "Election is active. Cannot add answers" });
+    }
   }
 );
 
@@ -428,24 +465,28 @@ app.get(
   async (req, res) => {
     if (req.user.voterId) {
       const election = await Elections.findByPk(req.params.id);
-      const questions = await Questions.findAll({
-        where: {
-          electionId: req.params.id,
-        },
-        include: [
-          {
-            model: Answers,
+      if (election.status === "active") {
+        const questions = await Questions.findAll({
+          where: {
+            electionId: req.params.id,
           },
-        ],
-      });
-      if (election) {
-        req.accepts("html")
-          ? res.render("pages/vote", { election, questions, user: req.user })
-          : res.json(election);
+          include: [
+            {
+              model: Answers,
+            },
+          ],
+        });
+        if (election) {
+          req.accepts("html")
+            ? res.render("pages/vote", { election, questions, user: req.user })
+            : res.json(election);
+        } else {
+          req.accepts("html")
+            ? res.status(404)
+            : res.status(404).json({ error: "Election not found" });
+        }
       } else {
-        req.accepts("html")
-          ? res.status(404)
-          : res.status(404).json({ error: "Election not found" });
+        res.status(403).json({ error: "Election is not active" });
       }
     } else {
       req.accepts("html")
@@ -496,7 +537,7 @@ app.get(
 app.post("/election/:id/voters", async (req, res) => {
   const electionId = req.params.id;
   const voterId = req.body.voterId.trim();
-  // Validate voterId is unique as sequelize has error
+  // Validate voterId is unique as sequelize has errors
   const voter = await Voters.findOne({
     where: {
       voterId,
