@@ -357,20 +357,26 @@ app.delete(
   "/election/:id/questions/:questionId",
   connectEnsureLogin.ensureLoggedIn(),
   async (req, res) => {
-    const question = await Questions.findByPk(req.params.questionId);
-    const answers = await Answers.findAll({
-      where: {
-        questionId: req.params.questionId,
-      },
-    });
-    if (question) {
-      answers.forEach(async (answer) => {
-        await answer.destroy();
-      });
-      await question.destroy();
-      res.json({ message: "Question deleted successfully" });
+    const election = await Elections.findByPk(req.params.id);
+    const isElectionActive = election.status === "active";
+    if (isElectionActive) {
+      res.status(422).json({ error: "Election is active" });
     } else {
-      res.status(404).json({ error: "Question not found" });
+      const question = await Questions.findByPk(req.params.questionId);
+      const answers = await Answers.findAll({
+        where: {
+          questionId: req.params.questionId,
+        },
+      });
+      if (question) {
+        answers.forEach(async (answer) => {
+          await answer.destroy();
+        });
+        await question.destroy();
+        res.json({ message: "Question deleted successfully" });
+      } else {
+        res.status(404).json({ error: "Question not found" });
+      }
     }
   }
 );
@@ -399,11 +405,17 @@ app.delete(
   connectEnsureLogin.ensureLoggedIn(),
   async (req, res) => {
     const answer = await Answers.findByPk(req.params.answerId);
-    if (answer) {
-      await answer.destroy();
-      res.json({ message: "Answer deleted successfully" });
+    const election = await Elections.findByPk(req.params.id);
+    const isElectionActive = election.status === "active";
+    if (isElectionActive) {
+      res.status(422).json({ error: "Election is active" });
     } else {
-      res.status(404).json({ error: "Answer not found" });
+      if (answer) {
+        await answer.destroy();
+        res.json({ message: "Answer deleted successfully" });
+      } else {
+        res.status(404).json({ error: "Answer not found" });
+      }
     }
   }
 );
