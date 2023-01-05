@@ -3,16 +3,13 @@ const app = express();
 const path = require("path");
 const csurf = require("csurf");
 const cookieParser = require("cookie-parser");
-const { Users, Elections, Questions, Answers } = require("./models");
+const { Users, Elections, Questions, Answers, Voters } = require("./models");
 const passport = require("passport"); // authentication
 const connectEnsureLogin = require("connect-ensure-login"); //authorization
 const session = require("express-session"); // session middleware for cookie support
 const LocalStrategy = require("passport-local").Strategy;
 const bcrypt = require("bcrypt");
-
-// const SequelizeStore = require("connect-session-sequelize")(session.Store);
 // const db = require("./models/index");
-
 const saltRounds = 10;
 
 app.use(cookieParser("secret"));
@@ -32,7 +29,7 @@ app.use(
   session({
     secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: { maxAge: 24 * 60 * 60 * 1000 }, // 24 hours
   })
 );
@@ -224,14 +221,22 @@ app.delete(
   }
 );
 
-app.get("/election/:id", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
-  const election = await Elections.findByPk(req.params.id);
-  if (election) {
-    req.accepts("html") ? res.render("pages/election", { election }) : res.json(election);
-  } else {
-    req.accepts("html") ? res.status(404) : res.status(404).json({ error: "Election not found" });
+app.get(
+  "/election/:id",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    const election = await Elections.findByPk(req.params.id);
+    if (election) {
+      req.accepts("html")
+        ? res.render("pages/election", { election })
+        : res.json(election);
+    } else {
+      req.accepts("html")
+        ? res.status(404)
+        : res.status(404).json({ error: "Election not found" });
+    }
   }
-});
+);
 
 app.get(
   "/election/:id/questions",
@@ -340,42 +345,87 @@ app.delete(
   }
 );
 
-app.get("/election/:id/vote", async (req, res) => {
-  const election = await Elections.findByPk(req.params.id);
-  const questions = await Questions.findAll({
-    where: {
-      electionId: req.params.id,
-    },
-    include: [
-      {
-        model: Answers,
+app.get(
+  "/election/:id/vote",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    const election = await Elections.findByPk(req.params.id);
+    const questions = await Questions.findAll({
+      where: {
+        electionId: req.params.id,
       },
-    ],
-  });
-  if (election) {
-    req.accepts("html")
-      ? res.render("pages/vote", { election, questions, user: req.user })
-      : res.json(election);
-  } else {
-    req.accepts("html")
-      ? res.status(404)
-      : res.status(404).json({ error: "Election not found" });
-  }
-});
-
-app.post("/election/:id/toggleStatus", async (req, res) => {
-  const election = await Elections.findByPk(req.params.id);
-  if (election) {
-    if (election.status === "inactive") {
-      election.status = "active";
+      include: [
+        {
+          model: Answers,
+        },
+      ],
+    });
+    if (election) {
+      req.accepts("html")
+        ? res.render("pages/vote", { election, questions, user: req.user })
+        : res.json(election);
     } else {
-      election.status = "inactive";
+      req.accepts("html")
+        ? res.status(404)
+        : res.status(404).json({ error: "Election not found" });
     }
-    await election.save();
-    res.json({ message: "Election status changed successfully" });
-  } else {
-    res.status(404).json({ error: "Election not found" });
   }
+);
+
+app.post(
+  "/election/:id/toggleStatus",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    const election = await Elections.findByPk(req.params.id);
+    if (election) {
+      if (election.status === "inactive") {
+        election.status = "active";
+      } else {
+        election.status = "inactive";
+      }
+      await election.save();
+      res.json({ message: "Election status changed successfully" });
+    } else {
+      res.status(404).json({ error: "Election not found" });
+    }
+  }
+);
+
+app.get(
+  "/election/:id/voters",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    // Register voters
+    const voters = await Voters.findAll({
+      where: {
+        electionId: req.params.id,
+      },
+    });
+    const election = await Elections.findByPk(req.params.id);
+    if (voters) {
+      req.accepts("html")
+        ? res.render("pages/voters", { election, voters, user: req.user })
+        : res.json(voters);
+    }
+  }
+);
+
+app.post("/election/:id/voters", async (req, res) => {
+  const electionId = req.params.id;
+  const voterId = req.body.voterId.trim();
+  // hash password
+  const password = await bcrypt.hash(req.body.password.trim(), 10);
+  await Voters.create({
+    voterId,
+    password,
+    electionId,
+  })
+    .then((voter) => {
+      res.json(voter);
+    })
+    .catch((error) => {
+      res.status(422).json({ error: error.message });
+    });
 });
 
 module.exports = app;
