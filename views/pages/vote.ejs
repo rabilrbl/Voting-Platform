@@ -75,6 +75,8 @@
           })
             .then((res) => {
               if (res.status === 200) {
+                // Disable multiple votes
+                form.querySelector("button").disabled = true;
                 alert("Vote submitted");
               } else {
                 alert("Something went wrong");
