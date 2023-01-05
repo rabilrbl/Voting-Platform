@@ -65,6 +65,35 @@ passport.use(
   )
 );
 
+// Voter Local Strategy
+passport.use(
+  "voter",
+  new LocalStrategy(
+    {
+      usernameField: "voterId",
+      passwordField: "password",
+    },
+    function (username, password, done) {
+      try {
+        Voters.findOne({ where: { voterId: username } })
+          .then(async function (user) {
+            const result = await bcrypt.compare(password, user.password);
+            if (result) {
+              return done(null, user);
+            } else {
+              return done(null, false, { message: "Invalid credentials" });
+            }
+          })
+          .catch(() => {
+            return done(null, false, { message: "Invalid credentials" });
+          });
+      } catch (err) {
+        return done(err);
+      }
+    }
+  )
+);
+
 passport.serializeUser(function (user, done) {
   done(null, user.id);
 });
@@ -413,19 +442,54 @@ app.get(
 app.post("/election/:id/voters", async (req, res) => {
   const electionId = req.params.id;
   const voterId = req.body.voterId.trim();
-  // hash password
-  const password = await bcrypt.hash(req.body.password.trim(), 10);
-  await Voters.create({
-    voterId,
-    password,
-    electionId,
-  })
-    .then((voter) => {
-      res.json(voter);
+  // Validate voterId is unique as sequelize has error
+  const voter = await Voters.findOne({
+    where: {
+      voterId,
+      electionId,
+    },
+  });
+  if (!voter) {
+    const password = await bcrypt.hash(req.body.password.trim(), 10);
+    await Voters.create({
+      voterId,
+      password,
+      electionId,
     })
-    .catch((error) => {
-      res.status(422).json({ error: error.message });
+      .then((voter) => {
+        res.json(voter);
+      })
+      .catch((error) => {
+        res.status(422).json({ error: error.message });
+      });
+  } else {
+    res.status(422).json({ error: "Voter ID already exists" });
+  }
+});
+
+app.delete(
+  "/election/:id/voters/:voterId",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    const voter = await Voters.findOne({
+      where: {
+        voterId: req.params.voterId,
+        electionId: req.params.id,
+      },
     });
+    if (voter) {
+      await voter.destroy();
+      res.json({ message: "Voter deleted successfully" });
+    } else {
+      res.status(404).json({ error: "Voter not found" });
+    }
+  }
+);
+
+app.post("/election/:id/login", passport.authenticate("voter"), (req, res) => {
+  req.accepts("html")
+    ? res.redirect("/election/:id/vote")
+    : res.json({ message: "Voter logged in successfully" });
 });
 
 module.exports = app;

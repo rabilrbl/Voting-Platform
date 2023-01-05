@@ -17,6 +17,9 @@ module.exports = (sequelize, DataTypes) => {
       voterId: {
         type: DataTypes.STRING,
         allowNull: false,
+        unique: {
+          msg: "Voter ID already exists",
+        },
         validate: {
           notEmpty: {
             msg: "Voter ID cannot be empty",

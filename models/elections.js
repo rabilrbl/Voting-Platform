@@ -12,6 +12,11 @@ module.exports = (sequelize, DataTypes) => {
       this.belongsTo(models.Users, { foreignKey: "userId" });
       this.hasMany(models.Questions, { foreignKey: "electionId" });
     }
+
+    static async isActive(electionId){
+      const election =  await Elections.findByPk(electionId);
+      return election.status === "active"
+    }
   }
   Elections.init(
     {

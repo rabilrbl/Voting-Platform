@@ -18,7 +18,7 @@
               <h2 class="text-xl"><%= question.name %></h2>
               <h3><%= index+1 %>. <%= question.description %></h3>
               <div class="mt-4">
-                <form action="/vote" method="POST">
+                <form onsubmit="return submitVote(event)">
                   <input
                     type="hidden"
                     name="electionId"
@@ -60,7 +60,7 @@
       <script>
         // This script is used to toggle the radio button when the label is clicked
         const voteForm = document.getElementById('vote');
-        // Submit the form when the radio button 
+        // Submit 
       </script>
     </div>
   </body>
