@@ -564,7 +564,7 @@ app.post(
 );
 
 app.post(
-  "election/:id/vote",
+  "/election/:id/vote",
   connectEnsureLogin.ensureLoggedIn(),
   async (req, res) => {
     const election = await Elections.findByPk(req.params.id);
