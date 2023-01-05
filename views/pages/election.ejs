@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('../partials/head', { title: 'Election' }) %>
+  </head>
+  <body>
+    <div class="mcontainer mt-4 w-full max-w-2xl">
+      <div class="center w-full" id="ballot">
+        <div class="w-full">
+          <%- include('../partials/electionHeader', { election: election }) %>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

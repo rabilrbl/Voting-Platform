@@ -224,8 +224,17 @@ app.delete(
   }
 );
 
+app.get("/election/:id", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
+  const election = await Elections.findByPk(req.params.id);
+  if (election) {
+    req.accepts("html") ? res.render("pages/election", { election }) : res.json(election);
+  } else {
+    req.accepts("html") ? res.status(404) : res.status(404).json({ error: "Election not found" });
+  }
+});
+
 app.get(
-  "/election/:id",
+  "/election/:id/questions",
   connectEnsureLogin.ensureLoggedIn(),
   async (req, res) => {
     const election = await Elections.findByPk(req.params.id);
@@ -351,6 +360,21 @@ app.get("/election/:id/vote", async (req, res) => {
     req.accepts("html")
       ? res.status(404)
       : res.status(404).json({ error: "Election not found" });
+  }
+});
+
+app.post("/election/:id/toggleStatus", async (req, res) => {
+  const election = await Elections.findByPk(req.params.id);
+  if (election) {
+    if (election.status === "inactive") {
+      election.status = "active";
+    } else {
+      election.status = "inactive";
+    }
+    await election.save();
+    res.json({ message: "Election status changed successfully" });
+  } else {
+    res.status(404).json({ error: "Election not found" });
   }
 });
 

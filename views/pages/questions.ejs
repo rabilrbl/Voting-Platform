@@ -7,14 +7,8 @@
     <div class="mcontainer mt-4 w-full max-w-2xl">
     <div class="center w-full" id="ballot">
       <div class="w-full">
-        <div class="flex items-center justify-between w-full">
-            <h1 class="font-extrabold"><%= election.title %></h1>
-            <p class="text-gray-500">
-              Created on <%= new Date(election.createdAt).toLocaleString() %>
-            </p>
-        </div>
-        <p class="text-gray-400 text-lg"><%= election.description %></p>
-        <div class="flex items-center justify-between w-full">
+        <%- include('../partials/electionHeader', { election: election }) %>
+        <div class="flex items-center justify-between w-full mt-6">
             <% if (questions.length > 0) { %>
                 <h2>
                     Questions
