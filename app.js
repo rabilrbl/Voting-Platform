@@ -374,7 +374,9 @@ app.post(
           res.status(422).json({ error: error.message });
         });
     } else {
-      res.status(422).json({ error: "Election is active. Cannot add questions" });
+      res
+        .status(422)
+        .json({ error: "Election is active. Cannot add questions" });
     }
   }
 );
@@ -419,18 +421,18 @@ app.post(
     });
     const isElectionActive = election.status === "active";
     if (isElectionActive) {
-    const answer = req.body.answer.trim();
-    const questionId = req.params.questionId;
-    await Answers.create({
-      answer,
-      questionId,
-    })
-      .then((answer) => {
-        res.json(answer);
+      const answer = req.body.answer.trim();
+      const questionId = req.params.questionId;
+      await Answers.create({
+        answer,
+        questionId,
       })
-      .catch((error) => {
-        res.status(422).json({ error: error.message });
-      });
+        .then((answer) => {
+          res.json(answer);
+        })
+        .catch((error) => {
+          res.status(422).json({ error: error.message });
+        });
     } else {
       res.status(422).json({ error: "Election is active. Cannot add answers" });
     }
