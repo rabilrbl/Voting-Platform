@@ -6,7 +6,6 @@
   <body>
     <div class="mcontainer center mt-4 max-w-2x">
       <div class="l">
-        <!-- This page is used by registered voters to vote for election with questions and answers -->
         <div class="" id="vote">
           <div class="">
             <h1><%= election.title %></h1>
@@ -18,7 +17,7 @@
               <h2 class="text-xl"><%= question.name %></h2>
               <h3><%= index+1 %>. <%= question.description %></h3>
               <div class="mt-4">
-                <form onsubmit="return submitVote(event)">
+                <form onsubmit="return submitVote(event, this)">
                   <input
                     type="hidden"
                     name="electionId"
@@ -47,7 +46,7 @@
                     </div>
                     <% }) %>
                   </div>
-                  <div class="mt-6">
+                  <div class="mt-4">
                     <button type="submit" class="btn">Submit</button>
                   </div>
                 </form>
@@ -58,9 +57,33 @@
         </div>
       </div>
       <script>
-        // This script is used to toggle the radio button when the label is clicked
-        const voteForm = document.getElementById('vote');
-        // Submit 
+        const submitVote = async (event, form) => {
+          event.preventDefault();
+          const electionId = form.electionId.value;
+          const questionId = form.questionId.value;
+          const answerId = form.answerId.value;
+          await fetch(`/election/${electionId}/vote`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              questionId,
+              answerId,
+              _csrf: "<%= csrfToken %>",
+            }),
+          })
+            .then((res) => {
+              if (res.status === 200) {
+                alert("Vote submitted");
+              } else {
+                alert("Something went wrong");
+              }
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+        };
       </script>
     </div>
   </body>

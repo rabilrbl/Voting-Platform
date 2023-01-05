@@ -3,7 +3,14 @@ const app = express();
 const path = require("path");
 const csurf = require("csurf");
 const cookieParser = require("cookie-parser");
-const { Users, Elections, Questions, Answers, Voters } = require("./models");
+const {
+  Users,
+  Elections,
+  Questions,
+  Answers,
+  Voters,
+  Votes,
+} = require("./models");
 const passport = require("passport"); // authentication
 const connectEnsureLogin = require("connect-ensure-login"); //authorization
 const session = require("express-session"); // session middleware for cookie support
@@ -39,6 +46,7 @@ app.use(passport.session());
 
 // Passport Local Strategy
 passport.use(
+  "local",
   new LocalStrategy(
     {
       usernameField: "email",
@@ -84,10 +92,12 @@ passport.use(
               return done(null, false, { message: "Invalid credentials" });
             }
           })
-          .catch(() => {
+          .catch((err) => {
+            console.log(err);
             return done(null, false, { message: "Invalid credentials" });
           });
       } catch (err) {
+        console.log(err);
         return done(err);
       }
     }
@@ -95,17 +105,41 @@ passport.use(
 );
 
 passport.serializeUser(function (user, done) {
-  done(null, user.id);
+  // If user is a voter, serialize voterId
+  if (user.voterId) {
+    done(null, {
+      voterId: user.voterId,
+      type: "voter",
+    });
+  } else {
+    // If user is a regular user, serialize id
+    done(null, {
+      id: user.id,
+      type: "user",
+    });
+  }
 });
 
-passport.deserializeUser(function (id, done) {
-  Users.findByPk(id)
-    .then((user) => {
-      done(null, user);
-    })
-    .catch((error) => {
-      done(error, null);
-    });
+passport.deserializeUser(function (data, done) {
+  // If id is a voterId, deserialize voterId
+  if (data.type === "voter") {
+    Voters.findOne({ where: { voterId: data.voterId } })
+      .then((user) => {
+        done(null, user);
+      })
+      .catch((err) => {
+        done(err);
+      });
+  } else {
+    // If id is a regular user, deserialize id
+    Users.findByPk(data.id)
+      .then((user) => {
+        done(null, user);
+      })
+      .catch((err) => {
+        done(err);
+      });
+  }
 });
 
 const sendResponse = (req, res, renderRes, jsonRes, renderData = {}) => {
@@ -376,27 +410,35 @@ app.delete(
 
 app.get(
   "/election/:id/vote",
-  connectEnsureLogin.ensureLoggedIn(),
+  connectEnsureLogin.ensureLoggedIn({
+    redirectTo: "login",
+  }),
   async (req, res) => {
-    const election = await Elections.findByPk(req.params.id);
-    const questions = await Questions.findAll({
-      where: {
-        electionId: req.params.id,
-      },
-      include: [
-        {
-          model: Answers,
+    if (req.user.voterId) {
+      const election = await Elections.findByPk(req.params.id);
+      const questions = await Questions.findAll({
+        where: {
+          electionId: req.params.id,
         },
-      ],
-    });
-    if (election) {
-      req.accepts("html")
-        ? res.render("pages/vote", { election, questions, user: req.user })
-        : res.json(election);
+        include: [
+          {
+            model: Answers,
+          },
+        ],
+      });
+      if (election) {
+        req.accepts("html")
+          ? res.render("pages/vote", { election, questions, user: req.user })
+          : res.json(election);
+      } else {
+        req.accepts("html")
+          ? res.status(404)
+          : res.status(404).json({ error: "Election not found" });
+      }
     } else {
       req.accepts("html")
-        ? res.status(404)
-        : res.status(404).json({ error: "Election not found" });
+        ? res.redirect(`/election/${req.params.id}/login`)
+        : res.status(403).json({ error: "You are not logged in as a voter" });
     }
   }
 );
@@ -486,10 +528,50 @@ app.delete(
   }
 );
 
-app.post("/election/:id/login", passport.authenticate("voter"), (req, res) => {
-  req.accepts("html")
-    ? res.redirect("/election/:id/vote")
-    : res.json({ message: "Voter logged in successfully" });
+app.get("/election/:id/login", async (req, res) => {
+  const election = await Elections.findByPk(req.params.id);
+  if (election) {
+    req.accepts("html")
+      ? res.render("pages/election_login", { election })
+      : res.status(404).json({ error: "Nothing to see here" });
+  } else {
+    req.accepts("html")
+      ? res.status(404)
+      : res.status(404).json({ error: "Election not found" });
+  }
 });
+
+app.post(
+  "/election/:id/login",
+  passport.authenticate("voter"),
+  async (req, res) => {
+    req.accepts("html")
+      ? res.redirect(`/election/${req.params.id}/vote`)
+      : res.json({ message: "Voter logged in successfully" });
+  }
+);
+
+app.post(
+  "election/:id/vote",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    const election = await Elections.findByPk(req.params.id);
+    if (election) {
+      const questionId = req.body.questionId;
+      const answerId = req.body.answerId;
+      const voterId = req.user.voterId;
+      const electionId = req.params.id;
+      await Votes.create({
+        questionId,
+        answerId,
+        voterId,
+        electionId,
+      });
+      res.json({ message: "Vote cast successfully" });
+    } else {
+      res.status(404).json({ error: "Election not found" });
+    }
+  }
+);
 
 module.exports = app;
