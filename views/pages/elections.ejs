@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('../partials/head', { title: 'Elections' }) %>
+  </head>
+  <body>
+    <div class="mcontainer mt-4">
+      <div class="center">
+        <div class="w-full max-w-2xl" id="elections">
+          <div class="flex items-center justify-between">
+            <h1>Welcome <%= user.firstName %> <%= user.lastName %></h1>
+            <a
+              href="/logout"
+              class="btn bg-transparent border-2 rounded-full hover:bg-transparent hover:bg-red-500 border-red-500 flex items-center justify-between"
+              >Logout
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="w-6 h-6"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"
+                />
+              </svg>
+            </a>
+          </div>
+          <div class="mt-6">
+            <div>
+              <div class="mt-6">
+                <div class="flex items-center justify-between">
+                  <% if (elections.length > 0) { %>
+                  <h2 class="text-xl">Your Elections</h2>
+                  <% } else { %>
+                  <h2 class="text-xl">You have no elections</h2>
+                  <% } %>
+                  <button
+                    onclick="openModal()"
+                    class="btn flex items-center justify-between max-w-fit rounded-full"
+                  >
+                    Create
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke-width="1.5"
+                      stroke="currentColor"
+                      class="w-6 h-6"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                      />
+                    </svg>
+                  </button>
+                </div>
+                <div class="mt-4">
+                  <% elections.forEach((election) => { %>
+                  <a class="" href="/election/<%= election.id %>">
+                    <div
+                      class="group flex items-center justify-between bg-slate-900 p-2 py-4 w-full mb-2 rounded-xl hover-pop hover:shadow-slate-500 cursor-pointer border-2 border-slate-500"
+                    >
+                      <div class="flex items-center">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke-width="1.5"
+                          stroke="currentColor"
+                          class="w-6 h-6"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M8.25 4.5l7.5 7.5-7.5 7.5"
+                          />
+                        </svg>
+                        <h3><%= election.title %></h3>
+                      </div>
+                    </div>
+                  </a>
+                  <% }) %>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      id="modal"
+      class="hidden fixed top-0 left-0 h-screen w-screen flex items-center justify-center"
+    >
+      <!-- The modal itself -->
+      <div
+        class="bg-slate-900 border-2 border-slate-400 shadow-slate-500 p-6 rounded-lg shadow-md"
+      >
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-2xl font-bold">Create Election</h3>
+          <button
+            onclick="closeModal()"
+            type="button"
+            class="btn-outline bg-transparent p-1 rounded-full border-red-500 hover:bg-red-500 text-red-500 hover:text-slate-100"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="w-6 h-6"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+        <form
+          class="flex flex-col gap-2 items-center justify-between w-full"
+          id="createElectionForm"
+        >
+          <input
+            class="input"
+            type="text"
+            class="border-2 border-slate-500 rounded-lg px-4 py-2"
+            placeholder="Election Name"
+            name="name"
+          />
+          <textarea
+            class="bg-slate-600 border-2 border-slate-500 rounded-lg px-4 py-2"
+            placeholder="Election Description"
+            name="description"
+          ></textarea>
+          <button
+            type="submit"
+            class="btn-outline flex items-center justify-between max-w-fit rounded-full mt-2"
+          >
+            Create
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="w-6 h-6"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+              />
+            </svg>
+          </button>
+        </form>
+      </div>
+    </div>
+    <script>
+      const modal = document.getElementById("modal");
+
+      const closeButton = document.getElementById("close-button");
+
+      const openModal = () => {
+        document.querySelector("#elections").classList.add("blur-sm");
+        modal.classList.replace("hidden", "block");
+      };
+
+      const closeModal = () => {
+        document.querySelector("#elections").classList.remove("blur-sm");
+        modal.classList.replace("block", "hidden");
+      };
+
+      window.addEventListener("click", (event) => {
+        if (event.target === modal) {
+          closeModal();
+        }
+      });
+
+      window.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          closeModal();
+        }
+      });
+
+      const form = document.getElementById("createElectionForm");
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData);
+        data._csrf = "<%= csrfToken %>";
+        fetch("/elections", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.error) {
+              alert(data.error);
+            } else {
+              event.target.reset();
+              window.location.href = `/election/${data.id}`;
+            }
+          });
+      });
+    </script>
+  </body>
+</html>

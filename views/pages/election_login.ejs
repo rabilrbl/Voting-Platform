@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('../partials/head', {title: 'Election Login'}) %>
+  </head>
+  <body>
+    <div class="mcontainer">
+      <!-- Create a stylish login form with dark theme in tailwindcss -->
+      <div class="flex flex-col justify-center items-center h-screen">
+        <form
+          class="border-2 border-slate-500 shadow-md rounded-xl px-8 pt-6 pb-8 mb-4 flex flex-col my-2 shadow-slate-500 w-full max-w-xl"
+          onsubmit="return loginAsVoter(event, this)"
+        >
+          <h1 class="mb-4">Login to vote</h1>
+          <div class="mb-4">
+            <label for="voterId"> Voter ID </label>
+            <input class="input" name="voterId" type="text" />
+          </div>
+          <input type="hidden" name="electionId" value="<%= election.id %>" />
+          <div class="mb-6">
+            <label for="password"> Password </label>
+            <input
+              class="input"
+              id="password"
+              type="password"
+              name="password"
+            />
+          </div>
+          <%- include('../partials/csrf') %>
+          <div class="flex items-center justify-between">
+            <button class="btn" type="submit">Sign In</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <script>
+      const loginAsVoter = async (event, form) => {
+        event.preventDefault();
+        const voterId = form.voterId.value;
+        const password = form.password.value;
+        const electionId = form.electionId.value;
+        await fetch(`/election/${electionId}/login`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            voterId,
+            password,
+            _csrf: form._csrf.value,
+          }),
+        })
+          .then((res) => {
+            if (res.status !== 401) {
+              window.location.href = `/election/${electionId}/vote`;
+            } else {
+              alert("Invalid voter ID or password");
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      };
+    </script>
+  </body>
+</html>

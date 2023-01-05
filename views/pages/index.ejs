@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('../partials/head', { title: 'Voting Platform' }) %>
+  </head>
+  <body>
+    <div class="mcontainer">
+      <div class="center-full">
+        <div class="space-y-6">
+          <h1 class="font-extrabold text-6xl">Voting Platform</h1>
+          <div class="max-w-xl">
+            <p class="text-xl font-bold">Welcome to the voting platform.</p>
+            <p class="text-xl">
+              Election administrators to sign up and create multiple elections.
+            </p>
+            <p class="text-xl">
+              You can create ballots of multiple questions, create a custom
+              public URL for the election.
+            </p>
+            <p class="text-lg font-bold">Please login to continue.</p>
+          </div>
+          <div class="flex gap-6 w-full justify-between text-center">
+            <a
+              href="/login"
+              class="btn-outline shadow-md shadow-slate-400 rounded-full w-1/2"
+              >Login</a
+            >
+            <a
+              href="/register"
+              class="btn-outline shadow-md shadow-slate-400 rounded-full w-1/2"
+              >Register</a
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

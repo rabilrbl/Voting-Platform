@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('../partials/head', { title: 'Login to Voting Platform' }) %>
+  </head>
+  <body>
+    <div class="mcontainer">
+      <div class="center-full">
+        <form
+          class="border-2 border-slate-500 shadow-md rounded-xl px-8 pt-6 pb-8 mb-4 flex flex-col my-2 shadow-slate-500"
+          method="post"
+        >
+          <h1 class="mb-4">Register</h1>
+          <!-- Registration form with first name, last name, email, password -->
+          <div class="flex gap-2 max-w-lg">
+            <div class="mb-4">
+              <label for="firstName"> First Name </label>
+              <input
+                class="input"
+                id="firstName"
+                name="firstName"
+                type="text"
+              />
+            </div>
+            <div class="mb-4">
+              <label for="lastName"> Last Name </label>
+              <input class="input" id="lastName" name="lastName" type="text" />
+            </div>
+          </div>
+          <div class="mb-4">
+            <label for="email"> Email </label>
+            <input class="input" id="email" name="email" type="email" />
+          </div>
+          <div class="mb-4">
+            <label for="password"> Password </label>
+            <input
+              class="input"
+              id="password"
+              name="password"
+              type="password"
+            />
+          </div>
+          <%- include('../partials/csrf') %>
+          <div class="flex items-center justify-between">
+            <button class="btn" type="submit">Register</button>
+            <a class="inline-text" href="/login"> Already have an account? </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
