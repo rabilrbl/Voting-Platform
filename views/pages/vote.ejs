@@ -30,22 +30,22 @@
                     value="<%= question.id %>"
                   />
                   <div class="grid gap-2 sm:grid-cols-2">
-                      <% question.Answers.forEach(function(answer) { %>
-                      <div class="mt-4 flex items-center">
-                        <input
-                          type="radio"
-                          class="mr-2 p-3 cursor-pointer"
-                          name="answerId"
-                          value="<%= answer.id %>"
-                        />
-                        <label
-                          for="answerId"
-                          class="cursor-pointer text-lg font-semibold"
-                          onclick="this.previousElementSibling.click()"
-                          ><%= answer.answer %></label
-                        >
-                      </div>
-                      <% }) %>
+                    <% question.Answers.forEach(function(answer) { %>
+                    <div class="mt-4 flex items-center" id="vote">
+                      <input
+                        type="radio"
+                        class="mr-2 p-3 cursor-pointer"
+                        name="answerId"
+                        value="<%= answer.id %>"
+                      />
+                      <label
+                        for="answerId"
+                        class="cursor-pointer text-lg font-semibold"
+                        onclick="this.previousElementSibling.click()"
+                        ><%= answer.answer %></label
+                      >
+                    </div>
+                    <% }) %>
                   </div>
                   <div class="mt-6">
                     <button type="submit" class="btn">Submit</button>
@@ -57,6 +57,11 @@
           </div>
         </div>
       </div>
+      <script>
+        // This script is used to toggle the radio button when the label is clicked
+        const voteForm = document.getElementById('vote');
+        // Submit the form when the radio button 
+      </script>
     </div>
   </body>
 </html>
