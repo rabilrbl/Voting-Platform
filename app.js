@@ -488,7 +488,7 @@ app.get(
             : res.status(404).json({ error: "Election not found" });
         }
       } else {
-        res.status(403).json({ error: "Election is not active" });
+        res.redirect(`/election/${req.params.id}/results`);
       }
     } else {
       req.accepts("html")
@@ -628,5 +628,45 @@ app.post(
     }
   }
 );
+
+app.get("/election/:id/results", async (req, res) => {
+  const election = await Elections.findByPk(req.params.id);
+  if (election) {
+    const questions = await Questions.findAll({
+      where: {
+        electionId: req.params.id,
+      },
+      include: [
+        {
+          model: Answers,
+        },
+      ],
+    });
+    const votes = await Votes.findAll({
+      where: {
+        electionId: req.params.id,
+      },
+    });
+
+    const results = questions.map((question) => {
+      const answers = question.Answers.map((answer) => {
+        const answerVotes = votes.filter(
+          (vote) => vote.answerId === answer.id
+        ).length;
+        return {
+          ...answer.dataValues,
+          votes: answerVotes,
+        };
+      });
+      return {
+        ...question.dataValues,
+        Answers: answers,
+      };
+    });
+    req.accepts("html")
+      ? res.render("pages/results", { election, results })
+      : res.json(questions);
+  }
+});
 
 module.exports = app;
