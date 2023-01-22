@@ -144,14 +144,6 @@ passport.deserializeUser(function (data, done) {
 
 app.use(flash());
 
-const sendResponse = (req, res, renderRes, jsonRes, renderData = {}) => {
-  if (req.accepts("html")) {
-    res.render(renderRes, renderData);
-  } else {
-    res.json(jsonRes);
-  }
-};
-
 app.use((request, response, next) => {
   // Restrict access to /vote to logged in voters
   if (request.user && request.user.voterId) {
@@ -174,9 +166,7 @@ app.use(function (request, response, next) {
 });
 
 app.get("/", (req, res) => {
-  sendResponse(req, res, "pages/index", {
-    message: "Welcome to the online voting platform!",
-  });
+  req.accepts("html") ? res.render("pages/index") : res.json({ message: "ok" });
 });
 
 app.get(
@@ -308,6 +298,9 @@ app.delete(
       },
     });
     if (election) {
+      if(await Elections.isActive(election.id)) {
+        return res.status(422).json({ error: "Election is active" });
+      }
       await election.destroy();
       res.json({ message: "Election deleted successfully" });
     } else {
@@ -539,7 +532,11 @@ app.post(
   async (req, res) => {
     const election = await Elections.findByPk(req.params.id);
     if (election) {
-      election.toggleStatus();
+      try {
+        await election.toggleStatus();
+      } catch (error) {
+        return res.status(422).json({ error: error.message });
+      }
       return res.json({ message: "Election status changed successfully" });
     } else {
       return res.status(404).json({ error: "Election not found" });
@@ -565,6 +562,29 @@ app.get(
     }
   }
 );
+
+app.get("/election/:id/preview", connectEnsureLogin.ensureLoggedIn(),async (req, res) => {
+  const election = await Elections.findByPk(req.params.id);
+  if (election) {
+    const questions = await Questions.findAll({
+      where: {
+        electionId: req.params.id,
+      },
+      include: [
+        {
+          model: Answers,
+        },
+      ],
+    });
+    req.accepts("html")
+      ? res.render("pages/preview", { election, questions, user: req.user })
+      : res.json(election);
+  } else {
+    req.accepts("html")
+      ? req.flash("error", "Election not found") && res.redirect("/")
+      : res.status(404).json({ error: "Election not found" });
+  }
+});
 
 app.post("/election/:id/voters", async (req, res) => {
   const electionId = req.params.id;

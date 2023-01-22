@@ -19,9 +19,21 @@ module.exports = (sequelize, DataTypes) => {
     }
 
     async toggleStatus() {
+      // Check if election has atleast one question and 2 answers
+      const questions = await this.getQuestions();
+      if (questions.length === 0) {
+        throw new Error("Election must have atleast one question");
+      }
+      for (let question of questions) {
+        const answers = await question.getAnswers();
+        if (answers.length < 2) {
+          throw new Error("Question must have atleast two answers");
+        }
+      }
       this.status = this.status === "active" ? "inactive" : "active";
       return await this.save();
     }
+
   }
   Elections.init(
     {
