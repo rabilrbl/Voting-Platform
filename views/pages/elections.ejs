@@ -7,28 +7,7 @@
     <div class="mcontainer mt-4">
       <div class="center">
         <div class="w-full max-w-2xl" id="elections">
-          <div class="flex items-center justify-between">
-            <h1>Welcome <%= user.firstName %> <%= user.lastName %></h1>
-            <a
-              href="/logout"
-              class="btn bg-transparent border-2 rounded-full hover:bg-transparent hover:bg-red-500 border-red-500 flex items-center justify-between"
-              >Logout
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                class="w-6 h-6"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"
-                />
-              </svg>
-            </a>
-          </div>
+          <%- include('../partials/user_header') %>
           <div class="mt-6">
             <div>
               <div class="mt-6">
@@ -61,7 +40,7 @@
                 </div>
                 <div class="mt-4">
                   <% elections.forEach((election) => { %>
-                  <a class="" href="/election/<%= election.id %>">
+                  <a class="" href="/election/<%= election.id %>/questions">
                     <div
                       class="group flex items-center justify-between bg-slate-900 p-2 py-4 w-full mb-2 rounded-xl hover-pop hover:shadow-slate-500 cursor-pointer border-2 border-slate-500"
                     >

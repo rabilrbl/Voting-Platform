@@ -13,9 +13,14 @@ module.exports = (sequelize, DataTypes) => {
       this.hasMany(models.Questions, { foreignKey: "electionId" });
     }
 
-    static async isActive(electionId){
-      const election =  await Elections.findByPk(electionId);
-      return election.status === "active"
+    static async isActive(electionId) {
+      const election = await this.findByPk(electionId);
+      return election.status === "active";
+    }
+
+    async toggleStatus() {
+      this.status = this.status === "active" ? "inactive" : "active";
+      return await this.save();
     }
   }
   Elections.init(

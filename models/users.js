@@ -12,6 +12,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
     }
+
   }
   Users.init({
     firstName: {
@@ -19,6 +20,13 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       validate: {
         notNull: {
+          msg: 'First name is required'
+        },
+        len: {
+          args: 3,
+          msg: 'First name must be at least 3 characters'
+        },
+        notEmpty: {
           msg: 'First name is required'
         },
       },
@@ -33,10 +41,25 @@ module.exports = (sequelize, DataTypes) => {
         },
         isEmail: {
           msg: 'Email is not valid'
-        }
+        },
+        notEmpty: {
+          msg: 'Email is required'
+        },
       },
     },
-    password: DataTypes.STRING
+    password: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notNull: {
+          msg: 'Password is required'
+        },
+        notEmpty: {
+          msg: 'Password is required'
+        },
+        
+      },
+    }
   }, {
     sequelize,
     modelName: 'Users',

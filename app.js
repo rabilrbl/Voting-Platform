@@ -16,7 +16,7 @@ const connectEnsureLogin = require("connect-ensure-login"); //authorization
 const session = require("express-session"); // session middleware for cookie support
 const LocalStrategy = require("passport-local").Strategy;
 const bcrypt = require("bcrypt");
-// const db = require("./models/index");
+const flash = require("connect-flash");
 const saltRounds = 10;
 
 app.use(cookieParser("secret"));
@@ -142,6 +142,8 @@ passport.deserializeUser(function (data, done) {
   }
 });
 
+app.use(flash());
+
 const sendResponse = (req, res, renderRes, jsonRes, renderData = {}) => {
   if (req.accepts("html")) {
     res.render(renderRes, renderData);
@@ -150,8 +152,24 @@ const sendResponse = (req, res, renderRes, jsonRes, renderData = {}) => {
   }
 };
 
+app.use((request, response, next) => {
+  // Restrict access to /vote to logged in voters
+  if (request.user && request.user.voterId) {
+    if (
+      !request.path.endsWith("/vote") &&
+      !request.path.endsWith("/logout") &&
+      !request.path.endsWith("/results")
+    ) {
+      return response.status(403).send("Forbidden");
+    }
+  }
+  next();
+});
+
 app.use(function (request, response, next) {
   response.locals.csrfToken = request.csrfToken();
+  response.locals.user = request.user;
+  response.locals.messages = request.flash();
   next();
 });
 
@@ -173,7 +191,8 @@ app.post(
   "/login",
   passport.authenticate("local", {
     failureRedirect: "/login",
-    // failureFlash: true,
+    failureFlash: true,
+    passReqToCallback: true,
   }),
   function (request, response) {
     response.redirect("/elections");
@@ -192,10 +211,18 @@ app.post(
   "/register",
   connectEnsureLogin.ensureLoggedOut({ redirectTo: "/elections" }),
   async function (request, response) {
+    const email = request.body.email.trim();
+    const userExists = await Users.findOne({ where: { email } });
+    if (userExists) {
+      return request.accepts("html")
+        ? request.flash("error", "Email already exists") &&
+            response.redirect("/register")
+        : response.status(422).json({ error: "Email already exists" });
+    }
     const firstName = request.body.firstName.trim();
     const lastName = request.body.lastName.trim();
-    const email = request.body.email.trim();
     const password = await bcrypt.hash(request.body.password, saltRounds);
+    // Prevent duplicate emails
     await Users.create({
       firstName,
       lastName,
@@ -209,9 +236,9 @@ app.post(
             return response.status(500).json({ error: err.message });
           }
           return request.accepts("html")
-            ? response.redirect("/elections")
-            : // request.flash("success", "User created successfully")
-              response.json({
+            ? request.flash("success", "User created successfully") &&
+                response.redirect("/elections")
+            : response.json({
                 id: user.id,
                 message: "User created successfully",
               });
@@ -219,8 +246,8 @@ app.post(
       })
       .catch((error) => {
         return request.accepts("html")
-          ? // ? request.flash("error", error.message) &&
-            response.redirect("/signup")
+          ? request.flash("error", error.message) &&
+              response.redirect("/register")
           : response.status(422).json({ error: error.message });
       });
   }
@@ -234,8 +261,8 @@ app.get(
       if (err) {
         return next(err);
       }
-      // request.flash("success", "You have been logged out");
-      response.redirect("/");
+      request.flash("success", "You have been logged out") &&
+        response.redirect("/");
     });
   }
 );
@@ -305,7 +332,7 @@ app.get(
         : res.json(election);
     } else {
       req.accepts("html")
-        ? res.status(404)
+        ? req.flash("error", "Election not found") && res.status(404)
         : res.status(404).json({ error: "Election not found" });
     }
   }
@@ -374,7 +401,9 @@ app.post(
           res.status(422).json({ error: error.message });
         });
     } else {
-      res.status(422).json({ error: "Election is active. Cannot add questions" });
+      res
+        .status(422)
+        .json({ error: "Election is active. Cannot add questions" });
     }
   }
 );
@@ -411,28 +440,21 @@ app.post(
   "/election/:id/questions/:questionId/answers",
   connectEnsureLogin.ensureLoggedIn(),
   async (req, res) => {
-    const election = await Elections.findOne({
-      where: {
-        id: req.params.id,
-        userId: req.user.id,
-      },
-    });
-    const isElectionActive = election.status === "active";
-    if (isElectionActive) {
+    if (await Elections.isActive(req.params.id)) {
+      return res
+        .status(422)
+        .json({ error: "Election is active, cannot add answers" });
+    }
     const answer = req.body.answer.trim();
     const questionId = req.params.questionId;
-    await Answers.create({
-      answer,
-      questionId,
-    })
-      .then((answer) => {
-        res.json(answer);
-      })
-      .catch((error) => {
-        res.status(422).json({ error: error.message });
+    try {
+      const newAnswer = await Answers.create({
+        answer,
+        questionId,
       });
-    } else {
-      res.status(422).json({ error: "Election is active. Cannot add answers" });
+      res.json(newAnswer);
+    } catch (error) {
+      res.status(422).json({ error: error.message });
     }
   }
 );
@@ -463,12 +485,27 @@ app.get(
     redirectTo: "login",
   }),
   async (req, res) => {
-    if (req.user.voterId) {
-      const election = await Elections.findByPk(req.params.id);
+    const electionId = req.params.id;
+    const voterId = req.user.voterId;
+    if (voterId) {
+      const election = await Elections.findByPk(electionId);
       if (election.status === "active") {
+        if (await Votes.hasAlreadyVoted(electionId, voterId)) {
+          return req.accepts("html")
+            ? req.flash(
+                "error",
+                "You have already voted. Please wait for the results"
+              ) &&
+                res
+                  .status(422)
+                  .send("You have already voted. Please wait for the results")
+            : res.status(422).json({
+                error: "You have already voted. Please wait for the results",
+              });
+        }
         const questions = await Questions.findAll({
           where: {
-            electionId: req.params.id,
+            electionId,
           },
           include: [
             {
@@ -486,11 +523,11 @@ app.get(
             : res.status(404).json({ error: "Election not found" });
         }
       } else {
-        res.status(403).json({ error: "Election is not active" });
+        res.redirect(`/election/${electionId}/results`);
       }
     } else {
       req.accepts("html")
-        ? res.redirect(`/election/${req.params.id}/login`)
+        ? res.redirect(`/election/${electionId}/login`)
         : res.status(403).json({ error: "You are not logged in as a voter" });
     }
   }
@@ -502,15 +539,10 @@ app.post(
   async (req, res) => {
     const election = await Elections.findByPk(req.params.id);
     if (election) {
-      if (election.status === "inactive") {
-        election.status = "active";
-      } else {
-        election.status = "inactive";
-      }
-      await election.save();
-      res.json({ message: "Election status changed successfully" });
+      election.toggleStatus();
+      return res.json({ message: "Election status changed successfully" });
     } else {
-      res.status(404).json({ error: "Election not found" });
+      return res.status(404).json({ error: "Election not found" });
     }
   }
 );
@@ -589,7 +621,7 @@ app.get("/election/:id/login", async (req, res) => {
       : res.status(404).json({ error: "Nothing to see here" });
   } else {
     req.accepts("html")
-      ? res.status(404)
+      ? req.flash("error", "Election not found") && res.status(404)
       : res.status(404).json({ error: "Election not found" });
   }
 });
@@ -609,20 +641,117 @@ app.post(
   connectEnsureLogin.ensureLoggedIn(),
   async (req, res) => {
     const election = await Elections.findByPk(req.params.id);
-    if (election) {
-      const questionId = req.body.questionId;
-      const answerId = req.body.answerId;
-      const voterId = req.user.voterId;
-      const electionId = req.params.id;
-      await Votes.create({
-        questionId,
-        answerId,
-        voterId,
-        electionId,
-      });
-      res.json({ message: "Vote cast successfully" });
+    const voterId = req.body.voterId;
+    if (election && election.status === "active") {
+      // Check if user has already voted
+      if (await Votes.hasAlreadyVoted(election.id, voterId)) {
+        return req.accepts("html")
+          ? req.flash("error", "You have already voted") &&
+              res.redirect(req.path)
+          : res.status(422).json({ error: "You have already voted" });
+      }
+      const questionIds = req.body.questionId;
+      console.log(req.body);
+
+      try {
+        questionIds.forEach(async (questionId) => {
+          const answerId = req.body[`answerId-of-${questionId}`];
+          await Votes.create({
+            voterId,
+            electionId: req.params.id,
+            questionId,
+            answerId,
+          });
+        });
+        req.accepts("html")
+          ? req.flash("success", "Vote cast successfully")
+          : res.json({ message: "Vote cast successfully" });
+      } catch (error) {
+        req.accepts("html")
+          ? req.flash("error", error.message)
+          : res.status(422).json({ error: error.message });
+      }
     } else {
-      res.status(404).json({ error: "Election not found" });
+      req.accepts("html")
+        ? req.flash("error", "Election not found")
+        : res.status(404).json({ error: "Election not found" });
+    }
+  }
+);
+
+app.get("/election/:id/results", async (req, res) => {
+  const election = await Elections.findByPk(req.params.id);
+  if (election) {
+    const questions = await Questions.findAll({
+      where: {
+        electionId: req.params.id,
+      },
+      include: [
+        {
+          model: Answers,
+        },
+      ],
+    });
+    const votes = await Votes.findAll({
+      where: {
+        electionId: req.params.id,
+      },
+    });
+
+    const results = questions.map((question) => {
+      const answers = question.Answers.map((answer) => {
+        const answerVotes = votes.filter(
+          (vote) => vote.answerId === answer.id
+        ).length;
+        return {
+          ...answer.dataValues,
+          votes: answerVotes,
+        };
+      });
+      return {
+        ...question.dataValues,
+        Answers: answers,
+      };
+    });
+    return req.accepts("html")
+      ? res.render("pages/results", { election, results })
+      : res.json(questions);
+  }
+});
+
+app.put(
+  "/election/:id/questions/:questionId",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    if (await Elections.isActive(req.params.id)) {
+      return res.status(422).json({ error: "Election is active" });
+    }
+    const question = await Questions.findByPk(req.params.questionId);
+    if (question) {
+      question.question = req.body.question;
+      question.description = req.body.description;
+      await question.save();
+      res.json({ message: "Question updated successfully" });
+    } else {
+      res.status(404).json({ error: "Question not found" });
+    }
+  }
+);
+
+app.put(
+  "/election/:id/questions/:questionId/answers/:answerId",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    if (await Elections.isActive(req.params.id)) {
+      return res.status(422).json({ error: "Election is active" });
+    }
+    const answer = await Answers.findByPk(req.params.answerId);
+    if (answer) {
+      answer.answer = req.body.answer;
+      await answer.save();
+      res.json({ message: "Answer updated successfully" });
+    } else {
+      res.status(404).json({ error: "Answer not found" });
     }
   }
 );

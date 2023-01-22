@@ -36,11 +36,10 @@
             </button>
           </div>
           <div>
-            <ul class="mt-4 list-disc list-inside">
+            <ul class="mt-4 list-disc list-inside space-y-2">
               <% voters.forEach(function(voter, index) { %>
-              <li class="flex items-center text-lg font-semibold">
+              <li class="flex items-center text-lg font-semibold border-2 border-slate-500 bg-slate-900 rounded-xl p-2 ">
                 <%= index+1 %>. <%= voter.voterId %>
-                <!-- Cross delete red button -->
                 <button
                   onclick="deleteVoter('<%= voter.voterId %>')"
                   type="button"

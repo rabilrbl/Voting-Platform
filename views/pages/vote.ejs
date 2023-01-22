@@ -12,12 +12,9 @@
             <p class="text-slate-400"><%= election.description %></p>
           </div>
           <div>
-            <% questions.forEach(function(question, index) { %>
-            <div class="mt-6">
-              <h2 class="text-xl"><%= question.name %></h2>
-              <h3><%= index+1 %>. <%= question.description %></h3>
-              <div class="mt-4">
-                <form onsubmit="return submitVote(event, this)">
+            <div class="mt-4">
+              <form action="/election/<%= election.id %>/vote" method="POST">
+                  <div class="mt-6">
                   <input
                     type="hidden"
                     name="electionId"
@@ -25,38 +22,49 @@
                   />
                   <input
                     type="hidden"
-                    name="questionId"
-                    value="<%= question.id %>"
+                    name="voterId"
+                    value="<%= user.voterId %>"
                   />
-                  <div class="grid gap-2 sm:grid-cols-2">
-                    <% question.Answers.forEach(function(answer) { %>
-                    <div class="mt-4 flex items-center" id="vote">
-                      <input
-                        type="radio"
-                        class="mr-2 p-3 cursor-pointer"
-                        name="answerId"
-                        value="<%= answer.id %>"
-                      />
-                      <label
-                        for="answerId"
-                        class="cursor-pointer text-lg font-semibold"
-                        onclick="this.previousElementSibling.click()"
-                        ><%= answer.answer %></label
-                      >
+                  <% questions.forEach(function(question, index) { %>
+                  <div class="mt-6">
+                    <h2 class="text-xl"><%= question.name %></h2>
+                    <h3><%= index+1 %>. <%= question.description %></h3>
+                    <input
+                      type="hidden"
+                      name="questionId[]"
+                      value="<%= question.id %>"
+                    />
+                    <div class="grid gap-2 sm:grid-cols-2">
+                      <% question.Answers.forEach(function(answer) { %>
+                      <div class="mt-4 flex items-center" id="vote">
+                        <input
+                          type="radio"
+                          class="mr-2 p-3 cursor-pointer"
+                          name="answerId-of-<%= question.id %>"
+                          value="<%= answer.id %>"
+                        />
+                        <label
+                          for="answerId-of-<%= question.id %>"
+                          class="cursor-pointer text-lg font-semibold"
+                          onclick="this.previousElementSibling.click()"
+                          ><%= answer.answer %></label
+                        >
+                      </div>
+                      <% }) %>
                     </div>
-                    <% }) %>
                   </div>
+                  <% }) %>
+                  <%- include('../partials/csrf') %>
                   <div class="mt-4">
                     <button type="submit" class="btn">Submit</button>
                   </div>
                 </form>
               </div>
             </div>
-            <% }) %>
           </div>
         </div>
       </div>
-      <script>
+      <!-- <script>
         const submitVote = async (event, form) => {
           event.preventDefault();
           const electionId = form.electionId.value;
@@ -86,7 +94,7 @@
               console.log(err);
             });
         };
-      </script>
+      </script> -->
     </div>
   </body>
 </html>
