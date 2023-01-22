@@ -400,9 +400,9 @@
             const form = document.createElement("form");
             form.className = "ml-6";
             form.innerHTML = `
-              <input type="text" name="answer" class="form-control mb-2 mr-sm-2 bg-gray-800 rounded-full max-w-fit" value="${answer}" required>
+              <input type="text" name="answer" class="form-control mb-2 px-2 py-1 bg-gray-800 rounded-full max-w-fit" value="${answer}" required>
               <input type="hidden" name="questionId" value="${questionId}">
-              <button type="submit" class="bg-blue-600 p-2 rounded-full text-base">Save</button>
+              <button type="submit" class="bg-blue-600 px-2 py-1  rounded-full text-base">Save</button>
             `;
             form.addEventListener("submit", (e) => saveEditAnswer(e, answerId));
             element.replaceWith(form);

@@ -414,29 +414,21 @@ app.post(
   "/election/:id/questions/:questionId/answers",
   connectEnsureLogin.ensureLoggedIn(),
   async (req, res) => {
-    const election = await Elections.findOne({
-      where: {
-        id: req.params.id,
-        userId: req.user.id,
-      },
-    });
-    const isElectionActive = election.status === "active";
-    if (isElectionActive) {
-      const answer = req.body.answer.trim();
-      const questionId = req.params.questionId;
-      await Answers.create({
-        answer,
-        questionId,
-      })
-        .then((answer) => {
-          res.json(answer);
-        })
-        .catch((error) => {
-          res.status(422).json({ error: error.message });
-        });
-    } else {
-      res.status(422).json({ error: "Election is active. Cannot add answers" });
+    if (Elections.isActive(req.params.id)) {
+      res.status(422).json({ error: "Election is active, cannot add answers" });
     }
+    const answer = req.body.answer.trim();
+    const questionId = req.params.questionId;
+    await Answers.create({
+      answer,
+      questionId,
+    })
+      .then((answer) => {
+        res.json(answer);
+      })
+      .catch((error) => {
+        res.status(422).json({ error: error.message });
+      });
   }
 );
 
@@ -696,7 +688,7 @@ app.put(
   "/election/:id/questions/:questionId",
   connectEnsureLogin.ensureLoggedIn(),
   async (req, res) => {
-    if(Elections.isActive(req.params.id)) {
+    if (Elections.isActive(req.params.id)) {
       return res.status(422).json({ error: "Election is active" });
     }
     const question = await Questions.findByPk(req.params.questionId);
@@ -715,7 +707,7 @@ app.put(
   "/election/:id/questions/:questionId/answers/:answerId",
   connectEnsureLogin.ensureLoggedIn(),
   async (req, res) => {
-    if(Elections.isActive(req.params.id)) {
+    if (Elections.isActive(req.params.id)) {
       return res.status(422).json({ error: "Election is active" });
     }
     const answer = await Answers.findByPk(req.params.answerId);
