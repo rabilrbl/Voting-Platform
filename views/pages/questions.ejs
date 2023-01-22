@@ -68,10 +68,10 @@
               </span>
               <p class="text-gray-400"><%= question.description %></p>
               <div>
-                <ul class="list-disc list-inside">
-                  <% question.Answers.forEach((answer) => { %>
+                <ul class="list-disc list-inside indent-3">
+                  <% question.Answers.forEach((answer, index) => { %>
                     <li class="text-slate-200 text-lg flex items-center group mr-4">
-                      <%= answer.answer %>
+                       <%= index+1 %>. <%= answer.answer %>
                       <div class="items-center justify-center gap-2 hidden group-hover:flex">
                         <!-- Edit button -->
                         <button

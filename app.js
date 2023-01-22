@@ -16,7 +16,7 @@ const connectEnsureLogin = require("connect-ensure-login"); //authorization
 const session = require("express-session"); // session middleware for cookie support
 const LocalStrategy = require("passport-local").Strategy;
 const bcrypt = require("bcrypt");
-// const db = require("./models/index");
+const flash = require("connect-flash");
 const saltRounds = 10;
 
 app.use(cookieParser("secret"));
@@ -142,6 +142,8 @@ passport.deserializeUser(function (data, done) {
   }
 });
 
+app.use(flash());
+
 const sendResponse = (req, res, renderRes, jsonRes, renderData = {}) => {
   if (req.accepts("html")) {
     res.render(renderRes, renderData);
@@ -153,7 +155,11 @@ const sendResponse = (req, res, renderRes, jsonRes, renderData = {}) => {
 app.use((request, response, next) => {
   // Restrict access to /vote to logged in voters
   if (request.user && request.user.voterId) {
-    if(!request.path.endsWith("/vote")) {
+    if (
+      !request.path.endsWith("/vote") &&
+      !request.path.endsWith("/logout") &&
+      !request.path.endsWith("/results")
+    ) {
       return response.status(403).send("Forbidden");
     }
   }
@@ -163,6 +169,7 @@ app.use((request, response, next) => {
 app.use(function (request, response, next) {
   response.locals.csrfToken = request.csrfToken();
   response.locals.user = request.user;
+  response.locals.messages = request.flash();
   next();
 });
 
@@ -184,7 +191,8 @@ app.post(
   "/login",
   passport.authenticate("local", {
     failureRedirect: "/login",
-    // failureFlash: true,
+    failureFlash: true,
+    passReqToCallback: true,
   }),
   function (request, response) {
     response.redirect("/elections");
@@ -203,10 +211,18 @@ app.post(
   "/register",
   connectEnsureLogin.ensureLoggedOut({ redirectTo: "/elections" }),
   async function (request, response) {
+    const email = request.body.email.trim();
+    const userExists = await Users.findOne({ where: { email } });
+    if (userExists) {
+      return request.accepts("html")
+        ? request.flash("error", "Email already exists") &&
+            response.redirect("/register")
+        : response.status(422).json({ error: "Email already exists" });
+    }
     const firstName = request.body.firstName.trim();
     const lastName = request.body.lastName.trim();
-    const email = request.body.email.trim();
     const password = await bcrypt.hash(request.body.password, saltRounds);
+    // Prevent duplicate emails
     await Users.create({
       firstName,
       lastName,
@@ -220,9 +236,9 @@ app.post(
             return response.status(500).json({ error: err.message });
           }
           return request.accepts("html")
-            ? response.redirect("/elections")
-            : // request.flash("success", "User created successfully")
-              response.json({
+            ? request.flash("success", "User created successfully") &&
+                response.redirect("/elections")
+            : response.json({
                 id: user.id,
                 message: "User created successfully",
               });
@@ -230,8 +246,8 @@ app.post(
       })
       .catch((error) => {
         return request.accepts("html")
-          ? // ? request.flash("error", error.message) &&
-            response.redirect("/signup")
+          ? request.flash("error", error.message) &&
+              response.redirect("/register")
           : response.status(422).json({ error: error.message });
       });
   }
@@ -245,8 +261,8 @@ app.get(
       if (err) {
         return next(err);
       }
-      // request.flash("success", "You have been logged out");
-      response.redirect("/");
+      request.flash("success", "You have been logged out") &&
+        response.redirect("/");
     });
   }
 );
@@ -316,7 +332,7 @@ app.get(
         : res.json(election);
     } else {
       req.accepts("html")
-        ? res.status(404)
+        ? req.flash("error", "Election not found") && res.status(404)
         : res.status(404).json({ error: "Election not found" });
     }
   }
@@ -475,9 +491,17 @@ app.get(
       const election = await Elections.findByPk(electionId);
       if (election.status === "active") {
         if (await Votes.hasAlreadyVoted(electionId, voterId)) {
-          return res.status(422).json({
-            error: "You have already voted. Please wait for the results",
-          });
+          return req.accepts("html")
+            ? req.flash(
+                "error",
+                "You have already voted. Please wait for the results"
+              ) &&
+                res
+                  .status(422)
+                  .send("You have already voted. Please wait for the results")
+            : res.status(422).json({
+                error: "You have already voted. Please wait for the results",
+              });
         }
         const questions = await Questions.findAll({
           where: {
@@ -597,7 +621,7 @@ app.get("/election/:id/login", async (req, res) => {
       : res.status(404).json({ error: "Nothing to see here" });
   } else {
     req.accepts("html")
-      ? res.status(404)
+      ? req.flash("error", "Election not found") && res.status(404)
       : res.status(404).json({ error: "Election not found" });
   }
 });
@@ -621,7 +645,10 @@ app.post(
     if (election && election.status === "active") {
       // Check if user has already voted
       if (await Votes.hasAlreadyVoted(election.id, voterId)) {
-        return res.status(422).json({ error: "You have already voted" });
+        return req.accepts("html")
+          ? req.flash("error", "You have already voted") &&
+              res.redirect(req.path)
+          : res.status(422).json({ error: "You have already voted" });
       }
       const questionIds = req.body.questionId;
       console.log(req.body);
@@ -636,12 +663,18 @@ app.post(
             answerId,
           });
         });
-        res.json({ message: "Vote cast successfully" });
+        req.accepts("html")
+          ? req.flash("success", "Vote cast successfully")
+          : res.json({ message: "Vote cast successfully" });
       } catch (error) {
-        res.status(422).json({ error: error.message });
+        req.accepts("html")
+          ? req.flash("error", error.message)
+          : res.status(422).json({ error: error.message });
       }
     } else {
-      res.status(404).json({ error: "Election not found" });
+      req.accepts("html")
+        ? req.flash("error", "Election not found")
+        : res.status(404).json({ error: "Election not found" });
     }
   }
 );
