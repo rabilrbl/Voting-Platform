@@ -718,7 +718,14 @@ app.get("/election/:id/results", async (req, res) => {
         electionId: req.params.id,
       },
     });
-
+    // Count total votes from users, without repeating voters
+    const totalVotes = await Votes.count({
+      distinct: true,
+      col: "voterId",
+      where: {
+        electionId: req.params.id,
+      },
+    });
     const results = questions.map((question) => {
       const answers = question.Answers.map((answer) => {
         const answerVotes = votes.filter(
@@ -735,7 +742,7 @@ app.get("/election/:id/results", async (req, res) => {
       };
     });
     return req.accepts("html")
-      ? res.render("pages/results", { election, results })
+      ? res.render("pages/results", { election, results, totalVotes })
       : res.json(questions);
   }
 });
