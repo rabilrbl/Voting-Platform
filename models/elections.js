@@ -33,6 +33,7 @@ module.exports = (sequelize, DataTypes) => {
       this.status = this.status === "active" ? "inactive" : "active";
       return await this.save();
     }
+
   }
   Elections.init(
     {
