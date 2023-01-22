@@ -150,7 +150,8 @@ app.use((request, response, next) => {
     if (
       !request.path.endsWith("/vote") &&
       !request.path.endsWith("/logout") &&
-      !request.path.endsWith("/results")
+      !request.path.endsWith("/results") &&
+      !request.path.endsWith("/message")
     ) {
       return response.status(403).send("Forbidden");
     }
@@ -684,16 +685,16 @@ app.post(
           });
         });
         req.accepts("html")
-          ? req.flash("success", "Vote cast successfully")
+          ? req.flash("success", "Vote cast successfully. Please wait for the results") && res.redirect("/message")
           : res.json({ message: "Vote cast successfully" });
       } catch (error) {
         req.accepts("html")
-          ? req.flash("error", error.message)
+          ? req.flash("error", error.message) && res.redirect("/message")
           : res.status(422).json({ error: error.message });
       }
     } else {
       req.accepts("html")
-        ? req.flash("error", "Election not found")
+        ? req.flash("error", "Election not found") && res.redirect("/message")
         : res.status(404).json({ error: "Election not found" });
     }
   }
@@ -775,5 +776,9 @@ app.put(
     }
   }
 );
+
+app.get("/message" , (req, res) => {
+  res.render("pages/message");
+});
 
 module.exports = app;

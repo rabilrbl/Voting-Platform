@@ -20,8 +20,8 @@
               />
               <% questions.forEach(function(question, index) { %>
               <div class="mt-6">
-                <h2 class="text-xl"><%= question.name %></h2>
-                <h3><%= index+1 %>. <%= question.description %></h3>
+                <h2 class=""><%= index+1 %>. <%= question.question %></h2>
+                <h5 class="text-gray-500"><%= question.description %></h5>
                 <input
                   type="hidden"
                   name="questionId[]"
