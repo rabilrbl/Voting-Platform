@@ -152,6 +152,7 @@ const sendResponse = (req, res, renderRes, jsonRes, renderData = {}) => {
 
 app.use(function (request, response, next) {
   response.locals.csrfToken = request.csrfToken();
+  response.locals.user = request.user;
   next();
 });
 
@@ -465,9 +466,22 @@ app.get(
     redirectTo: "login",
   }),
   async (req, res) => {
-    if (req.user.voterId) {
-      const election = await Elections.findByPk(req.params.id);
+    const electionId = req.params.id;
+    const voterId = req.user.voterId;
+    if (voterId) {
+      const election = await Elections.findByPk(electionId);
       if (election.status === "active") {
+        if (Votes.hasAlreadyVoted(electionId, voterId)) {
+          if (election.status === "inactive") {
+            return res.redirect(`/election/${req.params.id}/results`);
+          } else {
+            return res
+              .status(422)
+              .json({
+                error: "You have already voted. Please wait for the results",
+              });
+          }
+        }
         const questions = await Questions.findAll({
           where: {
             electionId: req.params.id,
@@ -611,18 +625,29 @@ app.post(
   connectEnsureLogin.ensureLoggedIn(),
   async (req, res) => {
     const election = await Elections.findByPk(req.params.id);
-    if (election) {
-      const questionId = req.body.questionId;
-      const answerId = req.body.answerId;
-      const voterId = req.user.voterId;
-      const electionId = req.params.id;
-      await Votes.create({
-        questionId,
-        answerId,
-        voterId,
-        electionId,
-      });
-      res.json({ message: "Vote cast successfully" });
+    const voterId = req.body.voterId;
+    if (election && election.status === "active") {
+      // Check if user has already voted
+      if (Votes.hasAlreadyVoted(election.id, voterId)) {
+        return res.status(422).json({ error: "You have already voted" });
+      }
+      const questionIds = req.body.questionId;
+      console.log(req.body);
+
+      try {
+        questionIds.forEach(async (questionId) => {
+          const answerId = req.body[`answerId-of-${questionId}`];
+          await Votes.create({
+            voterId,
+            electionId: req.params.id,
+            questionId,
+            answerId,
+          });
+        });
+        res.json({ message: "Vote cast successfully" });
+      } catch (error) {
+        res.status(422).json({ error: error.message });
+      }
     } else {
       res.status(404).json({ error: "Election not found" });
     }
@@ -663,7 +688,7 @@ app.get("/election/:id/results", async (req, res) => {
         Answers: answers,
       };
     });
-    req.accepts("html")
+    return req.accepts("html")
       ? res.render("pages/results", { election, results })
       : res.json(questions);
   }
