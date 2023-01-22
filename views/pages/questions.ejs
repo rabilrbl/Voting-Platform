@@ -44,41 +44,65 @@
             <div class="mb-2 p-4 bg-slate-900 border border-slate-500 shadow shadow-slate-500 rounded-xl">
               <span class="font-bold text-3xl text-slate-100 flex items-center justify-between">
                 <%=index+1 %>. <%= question.question %>
-                <button
-                  onclick="return deleteQuestion(event, <%= question.id %>)"
-                  class="p-1 rounded-full hover:bg-red-500 text-red-400 hover:text-slate-100"
-                >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                </svg>
-                
-                </button>
+                <div>
+                  <!-- Edit button -->
+                  <button
+                    onclick="return editQuestion(<%= question.id %>, '<%= question.question %>', '<%= question.description %>')"
+                    class="p-1 rounded-full hover:bg-slate-500 text-slate-400 hover:text-slate-100"
+                  >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                  </svg>
+                  
+                  </button>
+                  <button
+                    onclick="return deleteQuestion(event, <%= question.id %>)"
+                    class="p-1 rounded-full hover:bg-red-500 text-red-400 hover:text-slate-100"
+                  >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                  </svg>
+                  
+                  </button>
+                </div>
               </span>
               <p class="text-gray-400"><%= question.description %></p>
               <div>
                 <ul class="list-disc list-inside">
                   <% question.Answers.forEach((answer) => { %>
-                    <li class="text-slate-200 text-lg list-item items-center group">
+                    <li class="text-slate-200 text-lg flex items-center group mr-4">
                       <%= answer.answer %>
-                      <button
-                        onclick="return deleteAnswer(event, <%= question.id %>, <%= answer.id %>)"
-                        class="p-1 rounded-full hover:bg-red-500 text-red-400 hover:text-slate-100 ml-2"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke-width="1.5"
-                          stroke="currentColor"
-                          class="w-5 h-5"
+                      <div class="items-center justify-center gap-2 hidden group-hover:flex">
+                        <!-- Edit button -->
+                        <button
+                          onclick="return editAnswer(this, <%= question.id %>,<%= answer.id %>, '<%= answer.answer %>')"
+                          class="p-1 rounded-full hover:bg-slate-500 text-slate-400 hover:text-slate-100 ml-6"
                         >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="M6 18L18 6M6 6l12 12"
-                          />
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke-width="1.5"
+                            stroke="currentColor"
+                            class="w-5 h-5"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
+                            />
+                          </svg>
+                        </button>
+                        <button
+                          onclick="return deleteAnswer(event, <%= question.id %>, <%= answer.id %>)"
+                          class="p-1 rounded-full hover:bg-red-500 text-red-400 hover:text-slate-100 ml-2"
+                        >
+                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m6 4.125l2.25 2.25m0 0l2.25 2.25M12 13.875l2.25-2.25M12 13.875l-2.25 2.25M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
                         </svg>
-                      </button>
+                        
+                        </button>
+                      </div>
                     </li>
                     <!-- Add form with small input box to add answers -->
                     <% }) %>
@@ -131,7 +155,7 @@
       >
         <div class="flex flex-col items-center justify-between mb-4">
           <div class="flex items-center justify-between mb-4 w-full">
-            <h3 class="text-2xl font-bold">Add Question</h3>
+            <h3 id="modalTitle" class="text-2xl font-bold">Question</h3>
             <button
               onclick="closeModal()"
               type="button"
@@ -195,15 +219,33 @@
         </div>
       </div>
       <script>
+        let QuesID = null;
         const closeModal = () => {
           // Unblur the background
           document.querySelector("#ballot").classList.remove("blur-sm");
           document.getElementById("modal").classList.add("hidden");
+
+          // Clear form
+          const form = document.getElementById("addQuestionForm");
+          form.reset();
+
         }
         const openModal = () => {
           // Blur the background
           document.querySelector("#ballot").classList.add("blur-sm");
           document.getElementById("modal").classList.remove("hidden");
+
+          // If form question has value, then change button to edit
+          const question = document.querySelector("#addQuestionForm input[name='question']");
+          const button = document.querySelector("#addQuestionForm button[type='submit']");
+          const modalTitle = document.getElementById("modalTitle");
+          if (question.value) {
+            modalTitle.innerHTML = "Edit Question";
+            button.innerHTML = "Edit";
+          } else {
+            modalTitle.innerHTML = "Add Question";
+            button.innerHTML = "Add";
+          }
         }
 
         window.addEventListener("click", (event) => {
@@ -222,26 +264,33 @@
           .getElementById("addQuestionForm")
           .addEventListener("submit", (e) => {
             e.preventDefault();
-            const question = e.target.question.value;
-            const electionId = "<%= election.id %>";
-            const description = e.target.description.value;
-            fetch(`/election/${electionId}/questions`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ question, description ,electionId, _csrf: "<%= csrfToken %>" }),
-            })
-              .then((res) => res.json())
-              .then((data) => {
-                if (data.id) {
-                  // clear the form
-                  e.target.reset();
-                  window.location.reload();
-                } else {
-                  alert(data.error || "Something went wrong");
-                }
-              });
+            // Check the modal title
+            const modalTitle = document.getElementById("modalTitle").innerText;
+            if (modalTitle === "Edit Question") {
+
+              saveEditQuestion(e, QuesID);
+            } else {
+              const question = e.target.question.value;
+              const electionId = "<%= election.id %>";
+              const description = e.target.description.value;
+              fetch(`/election/${electionId}/questions`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ question, description ,electionId, _csrf: "<%= csrfToken %>" }),
+              })
+                .then((res) => res.json())
+                .then((data) => {
+                  if (data.id) {
+                    // clear the form
+                    e.target.reset();
+                    window.location.reload();
+                  } else {
+                    alert(data.error || "Something went wrong");
+                  }
+                });
+            }
           });
 
           const addAnswer = (e, qId, form) => {
@@ -309,7 +358,79 @@
                 alert(data.error || "Something went wrong");
               }
             });
-        }
+        
+          }
+          const editQuestion= (questionId,question, description) => {
+            event.preventDefault();
+            // Change question in form
+            const form = document.getElementById("addQuestionForm");
+            form.question.value = question;
+            form.description.value = description;
+            QuesID = questionId;
+            openModal();
+          }
+
+          const saveEditQuestion = (e, questionId) => {
+            e.preventDefault();
+            const question = e.target.question.value;
+            const electionId = "<%= election.id %>";
+            const description = e.target.description.value;
+            fetch(`/election/${electionId}/questions/${questionId}`, {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ question, description ,electionId, _csrf: "<%= csrfToken %>" }),
+            })
+              .then((res) => res.json())
+              .then((data) => {
+                if (data.message) {
+                  // clear the form
+                  e.target.reset();
+                  window.location.reload();
+                } else {
+                  alert(data.error || "Something went wrong");
+                }
+              });
+          }
+
+          const editAnswer = (element, questionId,answerId, answer) => {
+            event.preventDefault();
+            // Change answer element with input field and save button
+            const form = document.createElement("form");
+            form.className = "ml-6";
+            form.innerHTML = `
+              <input type="text" name="answer" class="form-control mb-2 mr-sm-2 bg-gray-800 rounded-full max-w-fit" value="${answer}" required>
+              <input type="hidden" name="questionId" value="${questionId}">
+              <button type="submit" class="bg-blue-600 p-2 rounded-full text-base">Save</button>
+            `;
+            form.addEventListener("submit", (e) => saveEditAnswer(e, answerId));
+            element.replaceWith(form);
+          }
+
+          const saveEditAnswer = (e, answerId) => {
+            e.preventDefault();
+            const answer = e.target.answer.value;
+            const electionId = "<%= election.id %>";
+            const questionId = e.target.questionId.value;
+            fetch(`/election/${electionId}/questions/${questionId}/answers/${answerId}`, {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ answer, _csrf: "<%= csrfToken %>" }),
+            })
+              .then((res) => res.json())
+              .then((data) => {
+                if (data.message) {
+                  // clear the form
+                  e.target.reset();
+                  window.location.reload();
+                } else {
+                  alert(data.error || "Something went wrong");
+                }
+              });
+          }
       </script>
     </div>
   </body>

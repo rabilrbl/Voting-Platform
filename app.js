@@ -475,11 +475,9 @@ app.get(
           if (election.status === "inactive") {
             return res.redirect(`/election/${req.params.id}/results`);
           } else {
-            return res
-              .status(422)
-              .json({
-                error: "You have already voted. Please wait for the results",
-              });
+            return res.status(422).json({
+              error: "You have already voted. Please wait for the results",
+            });
           }
         }
         const questions = await Questions.findAll({
@@ -693,5 +691,42 @@ app.get("/election/:id/results", async (req, res) => {
       : res.json(questions);
   }
 });
+
+app.put(
+  "/election/:id/questions/:questionId",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    if(Elections.isActive(req.params.id)) {
+      return res.status(422).json({ error: "Election is active" });
+    }
+    const question = await Questions.findByPk(req.params.questionId);
+    if (question) {
+      question.question = req.body.question;
+      question.description = req.body.description;
+      await question.save();
+      res.json({ message: "Question updated successfully" });
+    } else {
+      res.status(404).json({ error: "Question not found" });
+    }
+  }
+);
+
+app.put(
+  "/election/:id/questions/:questionId/answers/:answerId",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    if(Elections.isActive(req.params.id)) {
+      return res.status(422).json({ error: "Election is active" });
+    }
+    const answer = await Answers.findByPk(req.params.answerId);
+    if (answer) {
+      answer.answer = req.body.answer;
+      await answer.save();
+      res.json({ message: "Answer updated successfully" });
+    } else {
+      res.status(404).json({ error: "Answer not found" });
+    }
+  }
+);
 
 module.exports = app;

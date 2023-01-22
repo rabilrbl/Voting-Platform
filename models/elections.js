@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
     }
 
     static async isActive(electionId){
-      const election =  await Elections.findByPk(electionId);
+      const election =  await this.findByPk(electionId);
       return election.status === "active"
     }
   }
