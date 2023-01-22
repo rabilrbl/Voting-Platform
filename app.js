@@ -150,6 +150,16 @@ const sendResponse = (req, res, renderRes, jsonRes, renderData = {}) => {
   }
 };
 
+app.use((request, response, next) => {
+  // Restrict access to /vote to logged in voters
+  if (request.user && request.user.voterId) {
+    if(!request.path.endsWith("/vote")) {
+      return response.status(403).send("Forbidden");
+    }
+  }
+  next();
+});
+
 app.use(function (request, response, next) {
   response.locals.csrfToken = request.csrfToken();
   response.locals.user = request.user;
@@ -414,21 +424,22 @@ app.post(
   "/election/:id/questions/:questionId/answers",
   connectEnsureLogin.ensureLoggedIn(),
   async (req, res) => {
-    if (Elections.isActive(req.params.id)) {
-      res.status(422).json({ error: "Election is active, cannot add answers" });
+    if (await Elections.isActive(req.params.id)) {
+      return res
+        .status(422)
+        .json({ error: "Election is active, cannot add answers" });
     }
     const answer = req.body.answer.trim();
     const questionId = req.params.questionId;
-    await Answers.create({
-      answer,
-      questionId,
-    })
-      .then((answer) => {
-        res.json(answer);
-      })
-      .catch((error) => {
-        res.status(422).json({ error: error.message });
+    try {
+      const newAnswer = await Answers.create({
+        answer,
+        questionId,
       });
+      res.json(newAnswer);
+    } catch (error) {
+      res.status(422).json({ error: error.message });
+    }
   }
 );
 
@@ -463,18 +474,14 @@ app.get(
     if (voterId) {
       const election = await Elections.findByPk(electionId);
       if (election.status === "active") {
-        if (Votes.hasAlreadyVoted(electionId, voterId)) {
-          if (election.status === "inactive") {
-            return res.redirect(`/election/${req.params.id}/results`);
-          } else {
-            return res.status(422).json({
-              error: "You have already voted. Please wait for the results",
-            });
-          }
+        if (await Votes.hasAlreadyVoted(electionId, voterId)) {
+          return res.status(422).json({
+            error: "You have already voted. Please wait for the results",
+          });
         }
         const questions = await Questions.findAll({
           where: {
-            electionId: req.params.id,
+            electionId,
           },
           include: [
             {
@@ -492,11 +499,11 @@ app.get(
             : res.status(404).json({ error: "Election not found" });
         }
       } else {
-        res.redirect(`/election/${req.params.id}/results`);
+        res.redirect(`/election/${electionId}/results`);
       }
     } else {
       req.accepts("html")
-        ? res.redirect(`/election/${req.params.id}/login`)
+        ? res.redirect(`/election/${electionId}/login`)
         : res.status(403).json({ error: "You are not logged in as a voter" });
     }
   }
@@ -508,15 +515,10 @@ app.post(
   async (req, res) => {
     const election = await Elections.findByPk(req.params.id);
     if (election) {
-      if (election.status === "inactive") {
-        election.status = "active";
-      } else {
-        election.status = "inactive";
-      }
-      await election.save();
-      res.json({ message: "Election status changed successfully" });
+      election.toggleStatus();
+      return res.json({ message: "Election status changed successfully" });
     } else {
-      res.status(404).json({ error: "Election not found" });
+      return res.status(404).json({ error: "Election not found" });
     }
   }
 );
@@ -618,7 +620,7 @@ app.post(
     const voterId = req.body.voterId;
     if (election && election.status === "active") {
       // Check if user has already voted
-      if (Votes.hasAlreadyVoted(election.id, voterId)) {
+      if (await Votes.hasAlreadyVoted(election.id, voterId)) {
         return res.status(422).json({ error: "You have already voted" });
       }
       const questionIds = req.body.questionId;
@@ -688,7 +690,7 @@ app.put(
   "/election/:id/questions/:questionId",
   connectEnsureLogin.ensureLoggedIn(),
   async (req, res) => {
-    if (Elections.isActive(req.params.id)) {
+    if (await Elections.isActive(req.params.id)) {
       return res.status(422).json({ error: "Election is active" });
     }
     const question = await Questions.findByPk(req.params.questionId);
@@ -707,7 +709,7 @@ app.put(
   "/election/:id/questions/:questionId/answers/:answerId",
   connectEnsureLogin.ensureLoggedIn(),
   async (req, res) => {
-    if (Elections.isActive(req.params.id)) {
+    if (await Elections.isActive(req.params.id)) {
       return res.status(422).json({ error: "Election is active" });
     }
     const answer = await Answers.findByPk(req.params.answerId);

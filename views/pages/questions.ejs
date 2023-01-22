@@ -298,14 +298,17 @@
             const answer = form.answer.value;
             const questionId = qId;
             const electionId = "<%= election.id %>";
+            const _csrf = "<%= csrfToken %>";
             fetch(`/election/${electionId}/questions/${questionId}/answers`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
               },
-              body: JSON.stringify({ answer, questionId, _csrf: "<%= csrfToken %>" }),
+              body: JSON.stringify({ answer, questionId, _csrf }),
             })
-              .then((res) => res.json())
+              .then((res) => {
+                return res.json()
+              })
               .then((data) => {
                 if (data.id) {
                   // clear the form

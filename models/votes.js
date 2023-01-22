@@ -14,8 +14,8 @@ module.exports = (sequelize, DataTypes) => {
       this.belongsTo(models.Answers, { foreignKey: "answerId" });
     }
 
-    static hasAlreadyVoted(electionId, voterId) {
-      const voted = this.findOne({
+    static async hasAlreadyVoted(electionId, voterId) {
+      const voted = await this.findOne({
         where: {
           electionId,
           voterId,
