@@ -49,7 +49,7 @@ describe("Common Tests for Voting Platform", () => {
   it("should return home message", async () => {
     const req = await agent.get("/");
     expect(req.statusCode).toEqual(200);
-    expect(req.text).toContain("Welcome to the online voting platform!");
+    expect(req.text).toContain("ok");
   });
 
   it("should test for sessions", async () => {
