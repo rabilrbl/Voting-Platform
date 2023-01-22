@@ -539,7 +539,11 @@ app.post(
   async (req, res) => {
     const election = await Elections.findByPk(req.params.id);
     if (election) {
-      election.toggleStatus();
+      try {
+        await election.toggleStatus();
+      } catch (error) {
+        return res.status(422).json({ error: error.message });
+      }
       return res.json({ message: "Election status changed successfully" });
     } else {
       return res.status(404).json({ error: "Election not found" });
