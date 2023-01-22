@@ -10,20 +10,26 @@
           <div class="col-md-12">
             <h1>Results</h1>
             <p>Here are the results for the election <%= election.title %></p>
+            <% if (user && !user.voterId) { %>
+            <p>Progress so far.</p>
+            <h3 class="m-2">Total votes: <%= totalVotes %></h3>
+            <% } %>
             <div class="flex flex-col gap-6">
               <% results.forEach(function(result, index) { %>
-              <div class="card">    
+              <div class="card">
                 <div class="card-body">
                   <h5 class="card-title text-primary mb-2">
                     <%= index+1 %>. <%= result.question %>
                   </h5>
                   <div class="grid grid-cols-2 gap-2">
-                      <% result.Answers.forEach(function(answer) { %>
-                      <div class="flex items-center justify-between indent-6 px-4 py-6 border-2 border-slate-500 rounded-xl bg-slate-900">
-                        <span class="card-text"><%= answer.answer %></span>
-                        <span class="card-text"><%= answer.votes %> votes</span>
-                      </div>
-                      <% }) %>
+                    <% result.Answers.forEach(function(answer) { %>
+                    <div
+                      class="flex items-center justify-between indent-6 px-4 py-6 border-2 border-slate-500 rounded-xl bg-slate-900"
+                    >
+                      <span class="card-text"><%= answer.answer %></span>
+                      <span class="card-text"><%= answer.votes %> votes</span>
+                    </div>
+                    <% }) %>
                   </div>
                 </div>
               </div>

@@ -894,6 +894,10 @@ p {
   left: 0px;
 }
 
+.m-2 {
+  margin: 0.5rem;
+}
+
 .my-2 {
   margin-top: 0.5rem;
   margin-bottom: 0.5rem;
