@@ -148,6 +148,7 @@ app.use((request, response, next) => {
   // Restrict access to /vote to logged in voters
   if (request.user && request.user.voterId) {
     if (
+      !request.path === "/" &&
       !request.path.endsWith("/vote") &&
       !request.path.endsWith("/logout") &&
       !request.path.endsWith("/results")
@@ -684,11 +685,11 @@ app.post(
           });
         });
         req.accepts("html")
-          ? req.flash("success", "Vote cast successfully")
+          ? req.flash("success", "Vote cast successfully") && res.redirect("/")
           : res.json({ message: "Vote cast successfully" });
       } catch (error) {
         req.accepts("html")
-          ? req.flash("error", error.message)
+          ? req.flash("error", error.message) && res.redirect("/")
           : res.status(422).json({ error: error.message });
       }
     } else {
